@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+    <style>
+        body{
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            color: white;
+        }
+        #contentContainer{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+        }
+        #content{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 50vw;
+            height: 30vh;
+            border-radius: 20%;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #FF4571 ;
+            background-color: #4C4660;
+            z-index: 1000;
+        }
+        #startBtn{
+            margin: 10px;
+            width: 8vw;
+            height: 8vh;
+            border-radius: 100px;
+            border-width: 2px;
+            border-color: white;
+            border-style: solid;
+            background-color: #FF4571;
+            color:white;
+        }
+        #nameinput {
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="splash"></div>
+        <div class="container">
+            <section id="contentContainer">
+                <div id="content">
+                    <h1>Enter your name</h1>
+                    <input id="nameinput" type="text">
+                    <button id="startBtn" type="button">Start</button>
+                </div>
+            </section>
+
+            <div class="small-glows"></div>
+
+            <div class="glow"><div class="sun"></div></div>
+
+            <div class="waves">
+                <div class="top_wave"></div>
+                <div class="wave1"></div>
+                <div class="wave2"></div>
+                <div class="wave3"></div>
+                <div class="wave4"></div>
+            </div>
+
+            <div class="mounts">
+                <div class="mount1"></div>
+                <div class="mount2"></div>
+            </div>
+
+            <div class="clouds"></div>
+        </div>
+</body>
+</html><!--
+design by https://www.behance.net/vahanhovh
+-->

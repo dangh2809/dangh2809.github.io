@@ -43,6 +43,15 @@ class Game {
             console.log(event)
             let updatedFields = event.updateDescription.updatedFields;
             for (let strokeWithNumber in updatedFields){
+                if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length == 0){
+                    this.game.scene.getScene("default").graphics.clear()
+                    return
+                } else if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length ==1){
+                    let changeStreamPath = new Phaser.Curves.Path();
+                    changeStreamPath.fromJSON(updatedFields[strokeWithNumber][0])
+                    changeStreamPath.draw(this.graphics)
+                    return
+                }
                 let changeStreamPath = new Phaser.Curves.Path();
                 changeStreamPath.fromJSON(updatedFields[strokeWithNumber])
                 changeStreamPath.draw(this.graphics)
@@ -106,6 +115,10 @@ class Game {
                 this.authId = authId;
                 this.ownerId = result.owner_id;
                 this.guessWord = result.guessWord;
+                this.gameId = id;
+                this.strokes = result.stroke;
+                console.log(this)
+                console.log(result)
                 await this.game.scene.start("default", {
                     "gameId": id,
                     "collection": this.collection,
@@ -125,13 +138,15 @@ class Game {
             let game = await this.collection.insertOne({
                 "_id": id,
                 "owner_id": authId,
-                "stroke": [],
-                // "guessWord": guessWord
+                "strokes": [],
+                "guessWord": guessWord
             })
             this.game = new Phaser.Game(this.phaserConfig);
             this.authId = authId;
             this.ownerId = authId;
             this.guessWord = guessWord;
+            this.gameId= id;
+            this.strokes = [];
             await this.game.scene.start("default", {
                 "gameId": id,
                 "collection": this.collection,
@@ -145,22 +160,22 @@ class Game {
         }
        
     }
-    // clearDrawing(){
-    //     if (this.game && this.game.scene.isActive("default")) {
-    //         const defaultScene = this.game.scene.getScene("default");
-    //         if (defaultScene.graphics) {
-    //             defaultScene.graphics.clear();
-    //             // Update the strokes in the database or reset them to an empty array
-    //             this.collection.updateOne(
-    //                 { "_id": defaultScene.gameId },
-    //                 { "$set": { "strokes": [] } }
-    //             ).then(result => {
-    //                 console.log("Drawings cleared successfully.");
-    //             }).catch(error => {
-    //                 console.error("Error clearing drawings:", error);
-    //             });
-    //         }
-    //     }
+    clearDrawing(){
+        if (this.game && this.game.scene.isActive("default")) {
+            const defaultScene = this.game.scene.getScene("default");
+            if (defaultScene.graphics) {
+                defaultScene.graphics.clear();
+                // Update the strokes in the database or reset them to an empty array
+                this.collection.updateOne(
+                    { "_id": defaultScene.gameId },
+                    { "$set": { "strokes": [] } }
+                ).then(result => {
+                    console.log("Drawings cleared successfully.");
+                }).catch(error => {
+                    console.error("Error clearing drawings:", error);
+                });
+            }
+        }
         
-    // }
+    }
 }
