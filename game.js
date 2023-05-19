@@ -13,7 +13,6 @@ class Game {
                 update: this.updateScene
             }
         }
-        // const game = new Phaser.Game(this.phaserConfig)
 
         this.client = stitch.Stitch.initializeDefaultAppClient(config.realmAppId);
         this.database = this.client.getServiceClient(stitch.RemoteMongoClient.factory, "mongodb-atlas").db(config.databaseName);
@@ -39,7 +38,7 @@ class Game {
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
-        
+        this.timer = new Timer(1,30)
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
         })
@@ -60,6 +59,8 @@ class Game {
                     continue;
                 } else if (strokeWithNumber =="guessWord"){
                     if (this.authId != this.ownerId){
+
+                        // generate hidden word with one random character revealed
                         let hiddenWord = "";
                         let rand_index;
                         do {
@@ -77,10 +78,11 @@ class Game {
                         }
 
                         document.getElementById("curWord").textContent = hiddenWord
+                        console.log("timeout")
                     }else {
                         document.getElementById("curWord").textContent = updatedFields[strokeWithNumber]
                     }
-                   
+                    this.timer.start(updatedFields[strokeWithNumber]);
                     continue;
                 }
                 else if (strokeWithNumber =="guessCount"){
@@ -182,24 +184,25 @@ class Game {
             console.error(e)
         }
     }
-    async createGame(id, authId, guessWord){
+    async createGame(id, authId){
         try {
             let game = await this.collection.insertOne({
                 "_id": id,
                 "owner_id": authId,
                 "strokes": [],
-                "guessWord": guessWord,
+                "guessWord": "",
                 "guessCount": 0,
                 "score": 0
             })
             this.game = new Phaser.Game(this.phaserConfig);
             this.authId = authId;
             this.ownerId = authId;
-            this.guessWord = guessWord;
+            this.guessWord = "";
             this.gameId= id;
             this.guessCount =0;
             this.score = 0;
             this.strokes = [];
+            console.log(this)
             await this.game.scene.start("default", {
                 "gameId": id,
                 "collection": this.collection,
@@ -208,7 +211,7 @@ class Game {
                 "score": 0,
                 "guessCount": 0,
                 "strokes": [],
-                "guessWord": guessWord
+                "guessWord": ""
             })
             document.getElementById("score").textContent = "Correct: " + this.score +"/20";
             document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
@@ -247,6 +250,7 @@ class Game {
     async startOver(newWord){
         this.score = 0;
         this.guessCount = 0;
+        this.guessWord = newWord;
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
@@ -255,14 +259,17 @@ class Game {
             "$set": {
                 "score": this.score,
                 "guessCount": this.guessCount,
-                "guessWord": newWord
+                "guessWord": this.guessWord
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
-        document.getElementById("score").textContent = "Correct: " + this.score +"/20";
-        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
-        document.getElementById("gameOverContainer").style.visibility = "hidden";
+        // document.getElementById("score").textContent = "Correct: " + this.score +"/20";
+        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+        // document.getElementById("gameOverContainer").style.visibility = "hidden";
+        // let timer = new Timer(1,30);
+        // timer.start(this.guessWord)
     }
     async addScore(newWord){
+        console.log(this)
         if (this.authId != this.ownerId){
             return
         }
@@ -278,8 +285,10 @@ class Game {
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
         await this.skipWord(newWord)
-        document.getElementById("score").textContent = "Correct: " + this.score +"/20"
-        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+        // let timer = new Timer(1,30);
+        // timer.start(this.guessWord)
+        // document.getElementById("score").textContent = "Correct: " + this.score +"/20"
+        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
     }
     async skipWord(newWord){
         if (this.authId != this.ownerId){
@@ -297,9 +306,12 @@ class Game {
                 "guessCount": this.guessCount
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
-        document.getElementById("curWord").textContent = this.guessWord;
-        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+        // document.getElementById("curWord").textContent = this.guessWord;
+        // let timer = new Timer(1,30);
+        // timer.start(this.guessWord)
+        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
     }
+  
     hidTheWord(word){
         let hiddenWord = "";
         for (let i =0; i<word.length; i++){
