@@ -7,14 +7,16 @@ class Timer {
         this.timerInterval = null
         this.revealIndexes = []
     }
-    start(guessWord){
+    start(guessWord, isGuesser){
         // reset the clock
         clearInterval(this.timerInterval)
+        this.revealIndexes = [];
         this.timeleftMili = (60*this.minutes + this.second)*1000;
         document.getElementById("timer").style.color = "white";
         // Update the count down every 1 second
         this.timerInterval = setInterval(()=> {
         // Time calculations for minutes and second
+        console.log(this.revealIndexes)
         let minutes = Math.floor((this.timeleftMili % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((this.timeleftMili % (1000 * 60)) / 1000);
         let giveHint = ((guessWord)=>{
@@ -40,11 +42,12 @@ class Timer {
             }
             return wordWithHint;
         })
-        if (minutes==1 && seconds ==0){
+        if (minutes==1 && seconds ==0 && isGuesser){
+
+            console.log("is Guesser")
             // generate hidden word with one random character revealed
-            
             document.getElementById("curWord").textContent = giveHint(guessWord)
-        } else if (minutes==0 && seconds==30){
+        } else if (minutes==0 && seconds==30 && isGuesser){
             document.getElementById("curWord").textContent = giveHint(guessWord)
         }
         let formatTime = ((time)=>{
@@ -56,6 +59,7 @@ class Timer {
         // If the count down is finished, write some text
         if (this.timeleftMili <= 0) {
             this.timeOut=true;
+            this.revealIndexes=[]
           clearInterval(this.timerInterval);
           let revealWord = "";
           for (let i =0; i< guessWord.length; i++){

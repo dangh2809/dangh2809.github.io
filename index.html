@@ -31,10 +31,10 @@
                     <h4 id="score">Correct: </h4>
                     <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
                 </div>
-            <div style="display: flex; flex-direction: row-reverse">
+            <div id="gameBtn" style="display: flex; flex-direction: row-reverse">
                 <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Skip</button>
                 <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
-                <button id="startOverBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
+                <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
             </div>
                 <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
             </div>
@@ -50,7 +50,7 @@
     </div>
     <div id="gameOverContainer" style="border-style:solid; border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
         <h3>Game Over</h3>
-        <button  id="startOverBtn" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
+        <button  id="playAgainBtn" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
     </div>
    
     <script>
@@ -81,21 +81,23 @@
             await game.createOrJoin(document.getElementById("gameid").value, generateWords());
             
             document.getElementById("gameiddisplay").textContent = "Game ID: " + game.gameId
+            document.getElementById("createGame").hidden= true;
+            document.getElementById("bottomInGame").style.visibility= "visible";
+            document.getElementById("inGameContent").hidden = false;
             if (game.authId == game.ownerId){
                 document.getElementById("text2").textContent = "You are the owner of this room"
                 document.getElementById("curWord").textContent = game.guessWord;
                 document.getElementById("roleText").textContent = "You are the Drawer";
             } else {
-
+                document.getElementById("gameBtn").style.visibility="hidden"
+                document.getElementById("playAgainBtn").style.visibility="hidden"
                 document.getElementById("text2").textContent = "You are not the owner of this room" 
                 document.getElementById("roleText").textContent = "You are the Guesser";
             }
-            document.getElementById("createGame").hidden= true;
-            document.getElementById("bottomInGame").style.visibility= "visible";
-            document.getElementById("inGameContent").hidden = false;
-            if (game.guessCount >= 20){
-                document.getElementById("gameOverContainer").style.visibility = "visible";
-            }
+            
+            // if (game.guessCount >= 20){
+            //     document.getElementById("gameOverContainer").style.visibility = "visible";
+            // }
         }
         
         function handleCorrect(){

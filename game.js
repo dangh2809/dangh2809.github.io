@@ -73,7 +73,7 @@ class Game {
                     }else {
                         document.getElementById("curWord").textContent = updatedFields[strokeWithNumber]
                     }
-                    this.timer.start(updatedFields[strokeWithNumber]);
+                    this.timer.start(updatedFields[strokeWithNumber], this.authId != this.ownerId);
                     continue;
                 }
                 else if (strokeWithNumber =="guessCount"){
