@@ -11,27 +11,41 @@
     <title>Drawing game</title>
 </head>
 <body>
-    <div>
-        <div>
+   
+    <div style="position:absolute;background-color:black; color: white">
+        <div id="createGame" style="background-color: #25AA31; height: 10vh; width: 20vw; justify-content: center;" >
             <input id="gameid" type="text" placeholder="GameID" />
-            <button id="createGameBtn" type="button" onclick="joinOrCreateGame()">Create / Join</button>
+            <button id="endGameBtn" type="button" onclick="joinOrCreateGame()">Create / Join</button>
+            <button id="leaveGameBtn" type="button" onclick="leaveGame()">leave</button>
         </div>
-       <div id="gameiddisplay" display="display:none">
-            Game ID:
-       </div>
+        
+        <div>
+            
+           <div id="gameiddisplay" display="display:none">
+                Game ID:
+           </div>
+        </div>
+        <div>
+            <h3 id="text2"></h3>
+            <h3 style="text-align: center;"id="curWord">GuessWord</h3>
+            <div style="display: flex; flex-direction: row-reverse; margin-right: 10vw">
+                <h4 id="score">Correct: </h4>
+            </div>
+            <div style="display: flex; flex-direction: row-reverse">
+                <button id="wrongBtn" type="button" onclick="handleWrong()"style="background-color: lightcoral; margin-right: 10px; ">Wrong</button>
+                <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
+            </div>
+            <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
+        </div>
     </div>
-    <div>
-        <h3 id="text2"></h3>
-        <h3 id="curWord"></h3>
-        <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
     </div>
+   
     <script>
         // let client = stitch.Stitch.initializeDefaultAppClient(config.realmAppId);
         // let database = this.client.getServiceClient(stitch.RemoteMongoClient.factory, "mongodb-atlas").db(config.databaseName);
         // let collection = this.database.collection(config.collectionName);
         
-         const generalWords = words;
-        const rand_index = Math.floor(Math.random() * generalWords.length)
+         
         const game = new Game({
             "id": "game",
             "width": window.innerWidth,
@@ -39,26 +53,59 @@
             "realmAppId": "draw-and-guess-sivns",
             "databaseName": "draw-game",
             "collectionName": "game",
-            
         });
-        // const stream = await this.collection.watch({
-        //     "fullDocument._id": this.gameId
-        // })
-        // stream.onNext(event)
+
+        function generateWords(){
+            const generalWords = words;
+            const rand_index = Math.floor(Math.random() * generalWords.length)
+            return generalWords[rand_index]
+        }
+        
         const joinOrCreateGame = async () =>{
-            await game.createOrJoin(document.getElementById("gameid").value, generalWords[rand_index]);
+            await game.createOrJoin(document.getElementById("gameid").value, generateWords());
             
             document.getElementById("gameiddisplay").textContent = "Game ID: " + game.gameId
             if (game.authId == game.ownerId){
                 document.getElementById("text2").textContent = "You are the owner of this room"
+                document.getElementById("curWord").textContent = game.guessWord;
             } else {
-            document.getElementById("text2").textContent = "You are not the owner of this room" 
-            }
-            document.getElementById("curWord").textContent = game.guessWord;
-        }
+                let hiddenWord = "";
+                        let rand_index;
+                        do {
+                            rand_index = Math.floor(Math.random() * game.guessWord.length)
+                        } while(game.guessWord[rand_index] == " ")
+                        for (let i =0; i< game.guessWord.length; i++){
+                            if ( game.guessWord[i] === " "){
+                                console.log("there is space")
+                                hiddenWord += "\xa0 \xa0"
+                                continue;
+                            } else if (rand_index == i){
+                                hiddenWord += `${game.guessWord[i]} `
+                                continue
+                            }
+                            hiddenWord += `_ `
+                        }
 
+                document.getElementById("text2").textContent = "You are not the owner of this room" 
+                document.getElementById("curWord").textContent = hiddenWord;
+            }
+           
+            
+        }
+        
+        function handleCorrect(){
+            let newWord = generateWords();
+            game.addScore(newWord);
+        }
         const handleClear = ()=>{
             game.clearDrawing();
+        }
+        const leaveGame = () =>{
+            window.location.href = "/"
+        }
+        function handleWrong(){
+            let newWord = generateWords();
+            game.skipWord(newWord);
         }
         
     </script>

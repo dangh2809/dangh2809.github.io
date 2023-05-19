@@ -27,6 +27,7 @@ class Game {
         this.ownerId = data.ownerId;
         this.strokes = data.strokes;
         this.guessWord = data.guessWord;
+        this.score = data.score
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -36,6 +37,7 @@ class Game {
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
+        
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
         })
@@ -45,12 +47,39 @@ class Game {
             for (let strokeWithNumber in updatedFields){
                 if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length == 0){
                     this.game.scene.getScene("default").graphics.clear()
-                    return
+                    continue;
                 } else if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length ==1){
                     let changeStreamPath = new Phaser.Curves.Path();
                     changeStreamPath.fromJSON(updatedFields[strokeWithNumber][0])
                     changeStreamPath.draw(this.graphics)
-                    return
+                    continue;
+                } else if (strokeWithNumber =="score") {
+                    document.getElementById("score").textContent = "Correct: " + updatedFields[strokeWithNumber];
+                    continue;
+                } else if (strokeWithNumber =="guessWord"){
+                    if (this.authId != this.ownerId){
+                        let hiddenWord = "";
+                        let rand_index;
+                        do {
+                            rand_index = Math.floor(Math.random() * updatedFields[strokeWithNumber].length)
+                        } while(updatedFields[strokeWithNumber][rand_index] == " ")
+                        for (let i =0; i< updatedFields[strokeWithNumber].length; i++){
+                            if ( updatedFields[strokeWithNumber][i] === " "){
+                                hiddenWord+="\xa0 \xa0"
+                                continue;
+                            } else if (rand_index == i){
+                                hiddenWord += updatedFields[strokeWithNumber][i] + " ";
+                                continue;
+                            }
+                            hiddenWord += "_ "
+                        }
+
+                        document.getElementById("curWord").textContent = hiddenWord
+                    }else {
+                        document.getElementById("curWord").textContent = updatedFields[strokeWithNumber]
+                    }
+                   
+                    continue;
                 }
                 let changeStreamPath = new Phaser.Curves.Path();
                 changeStreamPath.fromJSON(updatedFields[strokeWithNumber])
@@ -116,7 +145,9 @@ class Game {
                 this.ownerId = result.owner_id;
                 this.guessWord = result.guessWord;
                 this.gameId = id;
+                this.score = result.score
                 this.strokes = result.stroke;
+                document.getElementById("score").textContent = "Correct: " + result.score;
                 console.log(this)
                 console.log(result)
                 await this.game.scene.start("default", {
@@ -125,6 +156,7 @@ class Game {
                     "authId": authId,
                     "ownerId": result.owner_id,
                     "strokes": result.strokes,
+                    "score": result.score,
                     "guessWord": result.guessWord
                 })
             }
@@ -139,19 +171,22 @@ class Game {
                 "_id": id,
                 "owner_id": authId,
                 "strokes": [],
-                "guessWord": guessWord
+                "guessWord": guessWord,
+                "score": 0
             })
             this.game = new Phaser.Game(this.phaserConfig);
             this.authId = authId;
             this.ownerId = authId;
             this.guessWord = guessWord;
             this.gameId= id;
+            this.score = 0;
             this.strokes = [];
             await this.game.scene.start("default", {
                 "gameId": id,
                 "collection": this.collection,
                 "authId": authId,
                 "ownerId": authId,
+                "score": 0,
                 "strokes": [],
                 "guessWord": guessWord
             })
@@ -178,4 +213,50 @@ class Game {
         }
         
     }
+    async addScore(newWord){
+        if (this.authId != this.ownerId){
+            return
+        }
+        console.log(this)
+        this.score = this.score + 1;
+        await this.collection.updateOne(
+            {
+                "_id": this.gameId,
+                "owner_id": this.authId
+            },{
+            "$set": {
+                "score": this.score 
+            }
+        }).then(result => {console.log(result)}, error =>console.error(error))
+        await this.skipWord(newWord)
+        document.getElementById("score").textContent = "Correct: " + this.score
+    }
+    async skipWord(newWord){
+        if (this.authId != this.ownerId){
+            return
+        }
+        this.guessWord = newWord;
+        await this.collection.updateOne(
+            {
+                "_id": this.gameId,
+                "owner_id": this.authId
+            },{
+            "$set": {
+                "guessWord": this.guessWord 
+            }
+        }).then(result => {console.log(result)}, error =>console.error(error))
+        document.getElementById("curWord").textContent = this.guessWord
+    }
+    hidTheWord(word){
+        let hiddenWord = "";
+        for (let i =0; i<word.length; i++){
+            if (word[i] === " "){
+                hiddenWord+= "  "
+                continue;
+            }
+            hiddenWord += "_ "
+        }
+        return hiddenWord
+    }
+   
 }
