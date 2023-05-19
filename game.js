@@ -215,6 +215,15 @@ class Game {
         }
         
     }
+    async leaveGame(){
+        await this.collection.deleteOne(
+            {
+                "_id": this.gameId,
+                "owner_id": this.authId
+            }
+        ).then(result => {console.log(result)}, error =>console.error(error))
+        window.location.href="/"
+    }
     async addScore(newWord){
         if (this.authId != this.ownerId){
             return

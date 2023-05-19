@@ -111,8 +111,8 @@
         const handleClear = ()=>{
             game.clearDrawing();
         }
-        const leaveGame = () =>{
-            window.location.href = "/"
+        const leaveGame = async() =>{
+            await game.leaveGame();
         }
         function handleWrong(){
             let newWord = generateWords();
