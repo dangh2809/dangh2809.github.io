@@ -86,25 +86,8 @@
                 document.getElementById("curWord").textContent = game.guessWord;
                 document.getElementById("roleText").textContent = "You are the Drawer";
             } else {
-                let hiddenWord = "";
-                        let rand_index;
-                        do {
-                            rand_index = Math.floor(Math.random() * game.guessWord.length)
-                        } while(game.guessWord[rand_index] == " ")
-                        for (let i =0; i< game.guessWord.length; i++){
-                            if ( game.guessWord[i] === " "){
-                                console.log("there is space")
-                                hiddenWord += "\xa0 \xa0"
-                                continue;
-                            } else if (rand_index == i){
-                                hiddenWord += `${game.guessWord[i]} `
-                                continue
-                            }
-                            hiddenWord += `_ `
-                        }
 
                 document.getElementById("text2").textContent = "You are not the owner of this room" 
-                document.getElementById("curWord").textContent = hiddenWord;
                 document.getElementById("roleText").textContent = "You are the Guesser";
             }
             document.getElementById("createGame").hidden= true;

@@ -59,21 +59,12 @@ class Game {
                     continue;
                 } else if (strokeWithNumber =="guessWord"){
                     if (this.authId != this.ownerId){
-
-                        // generate hidden word with one random character revealed
-                        let hiddenWord = "";
-                        let rand_index;
-                        do {
-                            rand_index = Math.floor(Math.random() * updatedFields[strokeWithNumber].length)
-                        } while(updatedFields[strokeWithNumber][rand_index] == " ")
+                        let hiddenWord="";
                         for (let i =0; i< updatedFields[strokeWithNumber].length; i++){
                             if ( updatedFields[strokeWithNumber][i] === " "){
                                 hiddenWord+="\xa0 \xa0"
                                 continue;
-                            } else if (rand_index == i){
-                                hiddenWord += updatedFields[strokeWithNumber][i] + " ";
-                                continue;
-                            }
+                            } 
                             hiddenWord += "_ "
                         }
 
@@ -101,9 +92,7 @@ class Game {
         })
     }
     updateScene(){
-        if (this.guessCount >= 20){
-            document.getElementById("gameOverContainer").style.visibility = "visible";
-        }
+        
         // not allow participant to draw
         if (this.authId != this.ownerId){
             return
