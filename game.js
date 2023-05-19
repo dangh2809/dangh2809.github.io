@@ -89,6 +89,7 @@ class Game {
                     } else {
                         document.getElementById("gameOverContainer").style.visibility = "hidden";
                     }
+                    document.getElementById("remainGuess").textContent = `You have ${20-updatedFields[strokeWithNumber]} guesses left`;
                     continue
                 }
                 let changeStreamPath = new Phaser.Curves.Path();
