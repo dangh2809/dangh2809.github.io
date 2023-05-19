@@ -13,7 +13,6 @@ class Timer {
         document.getElementById("timer").style.color = "white";
         // Update the count down every 1 second
         this.timerInterval = setInterval(()=> {
-            console.log("time is running")
         // Time calculations for minutes and second
         let minutes = Math.floor((this.timeleftMili % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((this.timeleftMili % (1000 * 60)) / 1000);
