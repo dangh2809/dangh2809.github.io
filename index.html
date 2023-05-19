@@ -10,40 +10,47 @@
     <script src="data.js"></script>
     <title>Drawing game</title>
 </head>
-<body>
+<body style=" margin: 0">
    
-    <div style="position:absolute;background-color:black; color: white">
-        <div id="createGame" style="background-color: #25AA31; height: 10vh; width: 20vw; justify-content: center;" >
+    <div style="position:absolute;background-color:black; color: white; margin-top:10px; margin-left: 10px" >
+        <div id="createGame" style="background-color: #25AA31; padding: 20px; " >
             <input id="gameid" type="text" placeholder="GameID" />
             <button id="endGameBtn" type="button" onclick="joinOrCreateGame()">Create / Join</button>
-            <button id="leaveGameBtn" type="button" onclick="leaveGame()">leave</button>
+            <!-- <button id="leaveGameBtn" type="button" onclick="leaveGame()">leave</button> -->
         </div>
-        
-        <div>
-            
-           <div id="gameiddisplay" display="display:none">
+        <div id="inGameContent" style=" width: 100vw;">
+            <div id="gameiddisplay" display="display:none">
                 Game ID:
-           </div>
-        </div>
-        <div>
-            <h3 id="text2"></h3>
-            <h3 style="text-align: center;"id="curWord">GuessWord</h3>
-            <div style="display: flex; flex-direction: row-reverse; margin-right: 10vw">
-                <h4 id="score">Correct: </h4>
             </div>
+            <div>
+                <h3 id="text2"></h3>
+                <h3 style="text-align: center;"id="curWord">GuessWord</h3>
+                <div style="display: flex; flex-direction: row-reverse; margin-right: 10vw">
+                    <h4 id="score">Correct: </h4>
+                </div>
             <div style="display: flex; flex-direction: row-reverse">
                 <button id="wrongBtn" type="button" onclick="handleWrong()"style="background-color: lightcoral; margin-right: 10px; ">Wrong</button>
                 <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
             </div>
-            <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
+                <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
+            </div>
+            
         </div>
+        
     </div>
+    <div id="bottomInGame" style="display:flex; flex-direction: row; position: absolute; bottom:0; right:0; margin-right: 10px; margin-bottom: 10px;">
+        <div style=" background-color: #25AA31; padding-right:10px; padding-left: 10px; padding-top:2px; padding-bottom: 2px">
+            <h4 id="roleText">You are not in a game</h4>
+        </div>
+        <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
     </div>
    
     <script>
         // let client = stitch.Stitch.initializeDefaultAppClient(config.realmAppId);
         // let database = this.client.getServiceClient(stitch.RemoteMongoClient.factory, "mongodb-atlas").db(config.databaseName);
         // let collection = this.database.collection(config.collectionName);
+        document.getElementById("bottomInGame").style.visibility= "hidden";
+        document.getElementById("inGameContent").hidden = true;
         
          
         const game = new Game({
@@ -60,7 +67,7 @@
             const rand_index = Math.floor(Math.random() * generalWords.length)
             return generalWords[rand_index]
         }
-        
+        //await game.createOrJoin(document.getElementById("gameid").value, generateWords());
         const joinOrCreateGame = async () =>{
             await game.createOrJoin(document.getElementById("gameid").value, generateWords());
             
@@ -68,6 +75,7 @@
             if (game.authId == game.ownerId){
                 document.getElementById("text2").textContent = "You are the owner of this room"
                 document.getElementById("curWord").textContent = game.guessWord;
+                document.getElementById("roleText").textContent = "You are the Drawer";
             } else {
                 let hiddenWord = "";
                         let rand_index;
@@ -88,8 +96,11 @@
 
                 document.getElementById("text2").textContent = "You are not the owner of this room" 
                 document.getElementById("curWord").textContent = hiddenWord;
+                document.getElementById("roleText").textContent = "You are the Guesser";
             }
-           
+            document.getElementById("createGame").hidden= true;
+            document.getElementById("bottomInGame").style.visibility= "visible";
+            document.getElementById("inGameContent").hidden = false;
             
         }
         

@@ -5,6 +5,7 @@ class Game {
             parent: config.id,
             width: config.width,
             height: config.height,
+            backgroundColor: "#ffff",
             scene: {
                 key:"default",
                 init: this.initScene,
@@ -190,6 +191,7 @@ class Game {
                 "strokes": [],
                 "guessWord": guessWord
             })
+            document.getElementById("score").textContent = "Correct: " + this.score;
         } catch(e){
             console.log(e)
         }
