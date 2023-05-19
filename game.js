@@ -29,6 +29,7 @@ class Game {
         this.strokes = data.strokes;
         this.guessWord = data.guessWord;
         this.score = data.score
+        this.guessCount = data.guessCount;
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -55,7 +56,7 @@ class Game {
                     changeStreamPath.draw(this.graphics)
                     continue;
                 } else if (strokeWithNumber =="score") {
-                    document.getElementById("score").textContent = "Correct: " + updatedFields[strokeWithNumber];
+                    document.getElementById("score").textContent = "Correct: " + updatedFields[strokeWithNumber] +"/20";
                     continue;
                 } else if (strokeWithNumber =="guessWord"){
                     if (this.authId != this.ownerId){
@@ -82,6 +83,14 @@ class Game {
                    
                     continue;
                 }
+                else if (strokeWithNumber =="guessCount"){
+                    if (updatedFields[strokeWithNumber] >= 20){
+                        document.getElementById("gameOverContainer").style.visibility = "visible";
+                    } else {
+                        document.getElementById("gameOverContainer").style.visibility = "hidden";
+                    }
+                    continue
+                }
                 let changeStreamPath = new Phaser.Curves.Path();
                 changeStreamPath.fromJSON(updatedFields[strokeWithNumber])
                 changeStreamPath.draw(this.graphics)
@@ -89,6 +98,9 @@ class Game {
         })
     }
     updateScene(){
+        if (this.guessCount >= 20){
+            document.getElementById("gameOverContainer").style.visibility = "visible";
+        }
         // not allow participant to draw
         if (this.authId != this.ownerId){
             return
@@ -146,9 +158,11 @@ class Game {
                 this.ownerId = result.owner_id;
                 this.guessWord = result.guessWord;
                 this.gameId = id;
+                this.guessCount = result.guessCount
                 this.score = result.score
                 this.strokes = result.stroke;
-                document.getElementById("score").textContent = "Correct: " + result.score;
+                document.getElementById("score").textContent = "Correct: " + result.score +"/20";
+                document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
                 console.log(this)
                 console.log(result)
                 await this.game.scene.start("default", {
@@ -158,6 +172,7 @@ class Game {
                     "ownerId": result.owner_id,
                     "strokes": result.strokes,
                     "score": result.score,
+                    "guessCount": result.guessCount,
                     "guessWord": result.guessWord
                 })
             }
@@ -173,6 +188,7 @@ class Game {
                 "owner_id": authId,
                 "strokes": [],
                 "guessWord": guessWord,
+                "guessCount": 0,
                 "score": 0
             })
             this.game = new Phaser.Game(this.phaserConfig);
@@ -180,6 +196,7 @@ class Game {
             this.ownerId = authId;
             this.guessWord = guessWord;
             this.gameId= id;
+            this.guessCount =0;
             this.score = 0;
             this.strokes = [];
             await this.game.scene.start("default", {
@@ -188,10 +205,12 @@ class Game {
                 "authId": authId,
                 "ownerId": authId,
                 "score": 0,
+                "guessCount": 0,
                 "strokes": [],
                 "guessWord": guessWord
             })
-            document.getElementById("score").textContent = "Correct: " + this.score;
+            document.getElementById("score").textContent = "Correct: " + this.score +"/20";
+            document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
         } catch(e){
             console.log(e)
         }
@@ -224,6 +243,24 @@ class Game {
         ).then(result => {console.log(result)}, error =>console.error(error))
         window.location.href="/"
     }
+    async startOver(newWord){
+        this.score = 0;
+        this.guessCount = 0;
+        await this.collection.updateOne(
+            {
+                "_id": this.gameId,
+                "owner_id": this.authId
+            },{
+            "$set": {
+                "score": this.score,
+                "guessCount": this.guessCount,
+                "guessWord": newWord
+            }
+        }).then(result => {console.log(result)}, error =>console.error(error))
+        document.getElementById("score").textContent = "Correct: " + this.score +"/20";
+        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+        document.getElementById("gameOverContainer").style.visibility = "hidden";
+    }
     async addScore(newWord){
         if (this.authId != this.ownerId){
             return
@@ -240,23 +277,27 @@ class Game {
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
         await this.skipWord(newWord)
-        document.getElementById("score").textContent = "Correct: " + this.score
+        document.getElementById("score").textContent = "Correct: " + this.score +"/20"
+        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
     }
     async skipWord(newWord){
         if (this.authId != this.ownerId){
             return
         }
         this.guessWord = newWord;
+        this.guessCount++;
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
                 "owner_id": this.authId
             },{
             "$set": {
-                "guessWord": this.guessWord 
+                "guessWord": this.guessWord,
+                "guessCount": this.guessCount
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
-        document.getElementById("curWord").textContent = this.guessWord
+        document.getElementById("curWord").textContent = this.guessWord;
+        document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
     }
     hidTheWord(word){
         let hiddenWord = "";

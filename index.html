@@ -25,12 +25,15 @@
             <div>
                 <h3 id="text2"></h3>
                 <h3 style="text-align: center;"id="curWord">GuessWord</h3>
-                <div style="display: flex; flex-direction: row-reverse; margin-right: 10vw">
+                <div style="display: flex; justify-content: flex-end; margin-right: 10vw">
                     <h4 id="score">Correct: </h4>
+                    <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
+                    
                 </div>
             <div style="display: flex; flex-direction: row-reverse">
-                <button id="wrongBtn" type="button" onclick="handleWrong()"style="background-color: lightcoral; margin-right: 10px; ">Wrong</button>
+                <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Skip</button>
                 <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
+                <button id="startOverBtn" onclick="startOver()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Start Over</button>
             </div>
                 <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
             </div>
@@ -44,6 +47,9 @@
         </div>
         <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
     </div>
+    <div id="gameOverContainer" style="border-style:solid; border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50">
+        <h3>Game Over</h3>
+    </div>
    
     <script>
         // let client = stitch.Stitch.initializeDefaultAppClient(config.realmAppId);
@@ -51,6 +57,7 @@
         // let collection = this.database.collection(config.collectionName);
         document.getElementById("bottomInGame").style.visibility= "hidden";
         document.getElementById("inGameContent").hidden = true;
+        document.getElementById("gameOverContainer").style.visibility = "hidden";
         
          
         const game = new Game({
@@ -101,7 +108,9 @@
             document.getElementById("createGame").hidden= true;
             document.getElementById("bottomInGame").style.visibility= "visible";
             document.getElementById("inGameContent").hidden = false;
-            
+            if (game.guessCount >= 20){
+                document.getElementById("gameOverContainer").style.visibility = "visible";
+            }
         }
         
         function handleCorrect(){
@@ -114,9 +123,14 @@
         const leaveGame = async() =>{
             await game.leaveGame();
         }
-        function handleWrong(){
+        async function startOver(){
             let newWord = generateWords();
-            game.skipWord(newWord);
+            await game.startOver(newWord);
+        }
+        
+        async function handleSkip(){
+            let newWord = generateWords();
+            await game.skipWord(newWord);
         }
         
     </script>
