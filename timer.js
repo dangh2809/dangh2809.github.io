@@ -54,6 +54,7 @@ class Timer {
             return time.length ==1 ? `0${time}` : time
         })
         // Display the result in the element with id="demo"
+        document.getElementById("timer").style.color= "black";
         document.getElementById("timer").textContent = formatTime(minutes+"") +":"+ formatTime(seconds+"");
         
         // If the count down is finished, write some text
