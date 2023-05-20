@@ -36,7 +36,9 @@ class Game {
         this.score = data.score;
         this.guessCount = data.guessCount;
         this.participants= data.participants;
-        this.playerName = data.playerName
+        this.playerName = data.playerName;
+        this.setParticipants = data.setParticipants;
+        this.displayPlayers = data.displayPlayers
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -51,46 +53,13 @@ class Game {
             "fullDocument._id": this.gameId
         })
         stream.onNext(event=>{
+            console.log(this)
             console.log(event)
             let participants = event.fullDocument.participants;
+            this.setParticipants(participants)
             const playerListContainer = document.getElementById("playersList")
             playerListContainer.replaceChildren();
-            participants.map((participant)=>{
-                if (participant.isDrawer){
-                    return
-                }
-                const playerContainer = document.createElement("div")
-                playerContainer.classList.add("player")
-                const playerAvatar = document.createElement("div")
-                playerAvatar.classList.add("playerAvatar")
-                const playerImage = document.createElement("img")
-                playerImage.classList.add("playerImage")
-                playerImage.src= "./user-icon.png"
-                const playerName = document.createElement("p")
-                playerName.classList.add("playerName")
-                const playerContext = document.createElement("div")
-                playerContext.classList.add("playerContext")
-                const playerGuess = document.createElement("div")
-                playerGuess.classList.add("playerGuess")
-                const playerScore = document.createElement("div")
-                playerScore.classList.add("playerScore")
-                // check if guess is correct
-                if (participant.guess != event.fullDocument.guessWord){
-                    playerGuess.innerHTML = "Guess: " + participant.guess
-                } else {
-                    playerGuess.innerHTML = participant.playerName + " guessed correctly!"
-                    playerGuess.style.color = "green"
-                }
-                playerScore.innerHTML = "Score: " + participant.score;
-                playerName.innerHTML = participant.playerName;
-                playerAvatar.appendChild(playerImage)
-                playerAvatar.appendChild(playerName)
-                playerContext.appendChild(playerGuess)
-                playerContext.appendChild(playerScore)
-                playerContainer.appendChild(playerAvatar)
-                playerContainer.appendChild(playerContext)
-                playerListContainer.appendChild(playerContainer)
-            })
+            this.displayPlayers(participants)
             let updatedFields = event.updateDescription.updatedFields;
             for (let updatedField in updatedFields){
                 if (updatedField =="strokes" && updatedFields[updatedField].length == 0){
@@ -133,21 +102,6 @@ class Game {
                     continue
                 } else if (updatedField =="participants"){
                     continue
-                    // populate the friend list
-                    // <div class="player" style="display:flex; height: 100px; background-color: black;">
-                    //     <div class="playerAvatar"style="display: flex; flex-direction: column;justify-content: center; width:30%; background-color: #8BF1DF;">
-                    //         <img class="playerImage" alt="avatar" src="./user-icon.png" style="object-fit:scale-down;max-width: 100%; max-height: 40px; margin:0px; padding:0px"/>
-                    //         <p class ="playerName"style="word-wrap: break-word; text-align: center; margin:0px; padding:0px;">Hieu Dang</p>
-                    //     </div>
-                    //     <div class="playerContext" style="flex: 1;display: flex; flex-direction: column; background-color: #25AA31;">
-                    //         <div class="playerGuess" style="flex: 1">
-                    //             Guess: ""
-                    //         </div>
-                    //         <div class="playerScore" style="flex:1">
-                    //             Score: 0
-                    //         </div>
-                    //     </div>
-                    // </div>
                 } else if (updatedField.includes("strokes.")){
                     let changeStreamPath = new Phaser.Curves.Path();
                     changeStreamPath.fromJSON(updatedFields[updatedField])
@@ -156,6 +110,7 @@ class Game {
                 
             }
         })
+        console.log(this)
     }
     updateScene(){
         
@@ -229,7 +184,7 @@ class Game {
                 this.guessCount = result.guessCount
                 this.score = result.score
                 this.strokes = result.stroke;
-                this.playerName = playerName
+                this.playerName = playerName;
                 document.getElementById("score").textContent = "Correct: " + result.score +"/20";
                 document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
                 console.log(this)
@@ -244,7 +199,8 @@ class Game {
                     "participants": result.participants,
                     "guessCount": result.guessCount,
                     "playerName": this.playerName,
-                    "guessWord": result.guessWord
+                    "guessWord": result.guessWord,
+                    "setParticipants": (newParticipants)=>{this.participants = newParticipants}
                 })
                 await this.collection.updateOne(
                     {"_id": id},
@@ -253,9 +209,14 @@ class Game {
                             "participants": newParticipant
                         }
                     }
-                ).then(result => {console.log(result)}, error =>console.error(error))
+                ).then(result => {
+                    console.log(result);
+                    this.participants.push(newParticipant)
+                    this.displayPlayers(this.participants)
+                }, error =>console.error(error))
+              
             }
-            
+        
             return result;
         } catch(e){
             console.error(e)
@@ -304,15 +265,20 @@ class Game {
                 "strokes": [],
                 "guessWord": "",
                 "playerName": this.playerName,
-                "participants":participants
+                "participants":this.participants,
+                "setParticipants": (newParticipants)=>{this.participants = newParticipants},
+                "displayPlayers": (participants)=>{this.displayPlayers(participants)}
             })
+            console.log(this)
             document.getElementById("score").textContent = "Correct: " + this.score +"/20";
             document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+            this.displayPlayers(participants)
         } catch(e){
             console.log(e)
         }
        
     }
+    
     clearDrawing(){
         if (this.game && this.game.scene.isActive("default")) {
             const defaultScene = this.game.scene.getScene("default");
@@ -336,9 +302,12 @@ class Game {
         if (this.authId != this.ownerId){
             this.participants.map(participant=>{
                 if (participant.userId != this.authId){
+                    console.log("yeayea")
                     newParticipants.push(participant)
                 }
             })
+            console.log(this.participants)
+            console.log(newParticipants)
             await this.collection.updateOne(
                 {
                     "_id": this.gameId,
@@ -435,5 +404,48 @@ class Game {
         }
         return hiddenWord
     }
-   
+    displayPlayers(participants){
+        const playerListContainer = document.getElementById("playersList")
+        participants.map((participant)=>{
+            const playerContainer = document.createElement("div")
+            playerContainer.classList.add("player")
+            const playerAvatar = document.createElement("div")
+            playerAvatar.classList.add("playerAvatar")
+            const playerImage = document.createElement("img")
+            playerImage.classList.add("playerImage")
+            playerImage.src= "./user-icon.png"
+            const playerName = document.createElement("p")
+            playerName.classList.add("playerName")
+            const playerContext = document.createElement("div")
+            playerContext.classList.add("playerContext")
+            const playerGuess = document.createElement("div")
+            playerGuess.classList.add("playerGuess")
+            const playerScore = document.createElement("div")
+            playerScore.classList.add("playerScore")
+            // check if guess is correct
+            if (participant.isDrawer && this.guessWord.length > 0){
+                playerGuess.innerHTML = "You are the drawer"
+            } else if (participant.guess != this.guessWord){
+                playerGuess.innerHTML = "Guess: " + participant.guess
+                playerScore.innerHTML = "Score: " + participant.score;
+            } else if (participant.guess == this.guessWord && this.guessWord != ""){
+                playerGuess.innerHTML = participant.playerName + " guessed correctly!"
+                playerGuess.style.color = "green"
+                playerScore.innerHTML = "Score: " + participant.score;
+            } else if (participant.userId == this.ownerId){
+                playerGuess.innerHTML =  "You are here"
+            }else{
+                playerGuess.innerHTML =  participant.playerName +" joined game!"
+            }
+            
+            playerName.innerHTML = participant.playerName;
+            playerAvatar.appendChild(playerImage)
+            playerAvatar.appendChild(playerName)
+            playerContext.appendChild(playerGuess)
+            playerContext.appendChild(playerScore)
+            playerContainer.appendChild(playerAvatar)
+            playerContainer.appendChild(playerContext)
+            playerListContainer.appendChild(playerContainer)
+    })
+    }
 }

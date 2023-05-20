@@ -92,6 +92,9 @@
             <div id="gameiddisplay" class="marginAlign"display="display:none">
                 Game ID:
             </div>
+            <div id="name" class="marginAlign"display="display:none">
+                Game ID:
+            </div>
             <div class="marginAlign">
                 <h3 id="text2"></h3>
                 <div style="display: flex; justify-content: flex-end; margin-right: 30px">
@@ -176,6 +179,7 @@
             await game.createOrJoin(document.getElementById("gameid").value,document.getElementById("playerName").value);
             
             document.getElementById("gameiddisplay").textContent = "Game ID: " + game.gameId
+            document.getElementById("name").textContent = game.playerName;
             document.getElementById("createGame").style.visibility= "hidden";
             document.getElementById("bottomInGame").style.visibility= "visible";
             document.getElementById("inGameContent").hidden =false;
