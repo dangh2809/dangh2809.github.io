@@ -33,8 +33,10 @@ class Game {
         this.ownerId = data.ownerId;
         this.strokes = data.strokes;
         this.guessWord = data.guessWord;
-        this.score = data.score
+        this.score = data.score;
         this.guessCount = data.guessCount;
+        this.participants= data.participants;
+        this.playerName = data.playerName
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -50,24 +52,63 @@ class Game {
         })
         stream.onNext(event=>{
             console.log(event)
+            let participants = event.fullDocument.participants;
+            const playerListContainer = document.getElementById("playersList")
+            playerListContainer.replaceChildren();
+            participants.map((participant)=>{
+                if (participant.isDrawer){
+                    return
+                }
+                const playerContainer = document.createElement("div")
+                playerContainer.classList.add("player")
+                const playerAvatar = document.createElement("div")
+                playerAvatar.classList.add("playerAvatar")
+                const playerImage = document.createElement("img")
+                playerImage.classList.add("playerImage")
+                playerImage.src= "./user-icon.png"
+                const playerName = document.createElement("p")
+                playerName.classList.add("playerName")
+                const playerContext = document.createElement("div")
+                playerContext.classList.add("playerContext")
+                const playerGuess = document.createElement("div")
+                playerGuess.classList.add("playerGuess")
+                const playerScore = document.createElement("div")
+                playerScore.classList.add("playerScore")
+                // check if guess is correct
+                if (participant.guess != event.fullDocument.guessWord){
+                    playerGuess.innerHTML = "Guess: " + participant.guess
+                } else {
+                    playerGuess.innerHTML = participant.playerName + " guessed correctly!"
+                    playerGuess.style.color = "green"
+                }
+                playerScore.innerHTML = "Score: " + participant.score;
+                playerName.innerHTML = participant.playerName;
+                playerAvatar.appendChild(playerImage)
+                playerAvatar.appendChild(playerName)
+                playerContext.appendChild(playerGuess)
+                playerContext.appendChild(playerScore)
+                playerContainer.appendChild(playerAvatar)
+                playerContainer.appendChild(playerContext)
+                playerListContainer.appendChild(playerContainer)
+            })
             let updatedFields = event.updateDescription.updatedFields;
-            for (let strokeWithNumber in updatedFields){
-                if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length == 0){
+            for (let updatedField in updatedFields){
+                if (updatedField =="strokes" && updatedFields[updatedField].length == 0){
                     this.game.scene.getScene("default").graphics.clear()
                     continue;
-                } else if (strokeWithNumber =="strokes" && updatedFields[strokeWithNumber].length ==1){
+                } else if (updatedField =="strokes" && updatedFields[updatedField].length ==1){
                     let changeStreamPath = new Phaser.Curves.Path();
-                    changeStreamPath.fromJSON(updatedFields[strokeWithNumber][0])
+                    changeStreamPath.fromJSON(updatedFields[updatedField][0])
                     changeStreamPath.draw(this.graphics)
                     continue;
-                } else if (strokeWithNumber =="score") {
-                    document.getElementById("score").textContent = "Correct: " + updatedFields[strokeWithNumber] +"/20";
+                } else if (updatedField =="score") {
+                    document.getElementById("score").textContent = "Correct: " + updatedFields[updatedField] +"/20";
                     continue;
-                } else if (strokeWithNumber =="guessWord"){
+                } else if (updatedField =="guessWord"){
                     if (this.authId != this.ownerId){
                         let hiddenWord="";
-                        for (let i =0; i< updatedFields[strokeWithNumber].length; i++){
-                            if ( updatedFields[strokeWithNumber][i] === " "){
+                        for (let i =0; i< updatedFields[updatedField].length; i++){
+                            if ( updatedFields[updatedField][i] === " "){
                                 hiddenWord+="\xa0 \xa0"
                                 continue;
                             } 
@@ -77,23 +118,42 @@ class Game {
                         document.getElementById("curWord").textContent = hiddenWord
                         console.log("timeout")
                     }else {
-                        document.getElementById("curWord").textContent = updatedFields[strokeWithNumber]
+                        document.getElementById("curWord").textContent = updatedFields[updatedField]
                     }
-                    this.timer.start(updatedFields[strokeWithNumber], this.authId != this.ownerId);
+                    this.timer.start(updatedFields[updatedField], this.authId != this.ownerId);
                     continue;
                 }
-                else if (strokeWithNumber =="guessCount"){
-                    if (updatedFields[strokeWithNumber] >= 20){
+                else if (updatedField =="guessCount"){
+                    if (updatedFields[updatedField] >= 20){
                         document.getElementById("gameOverContainer").style.visibility = "visible";
                     } else {
                         document.getElementById("gameOverContainer").style.visibility = "hidden";
                     }
-                    document.getElementById("remainGuess").textContent = `You have ${20-updatedFields[strokeWithNumber]} guesses left`;
+                    document.getElementById("remainGuess").textContent = `You have ${20-updatedFields[updatedField]} guesses left`;
                     continue
+                } else if (updatedField =="participants"){
+                    continue
+                    // populate the friend list
+                    // <div class="player" style="display:flex; height: 100px; background-color: black;">
+                    //     <div class="playerAvatar"style="display: flex; flex-direction: column;justify-content: center; width:30%; background-color: #8BF1DF;">
+                    //         <img class="playerImage" alt="avatar" src="./user-icon.png" style="object-fit:scale-down;max-width: 100%; max-height: 40px; margin:0px; padding:0px"/>
+                    //         <p class ="playerName"style="word-wrap: break-word; text-align: center; margin:0px; padding:0px;">Hieu Dang</p>
+                    //     </div>
+                    //     <div class="playerContext" style="flex: 1;display: flex; flex-direction: column; background-color: #25AA31;">
+                    //         <div class="playerGuess" style="flex: 1">
+                    //             Guess: ""
+                    //         </div>
+                    //         <div class="playerScore" style="flex:1">
+                    //             Score: 0
+                    //         </div>
+                    //     </div>
+                    // </div>
+                } else if (updatedField.includes("strokes.")){
+                    let changeStreamPath = new Phaser.Curves.Path();
+                    changeStreamPath.fromJSON(updatedFields[updatedField])
+                    changeStreamPath.draw(this.graphics)
                 }
-                let changeStreamPath = new Phaser.Curves.Path();
-                changeStreamPath.fromJSON(updatedFields[strokeWithNumber])
-                changeStreamPath.draw(this.graphics)
+                
             }
         })
     }
@@ -134,31 +194,42 @@ class Game {
     async authenticate(){
         return this.client.auth.loginWithCredential(new stitch.AnonymousCredential());
     }
-    async createOrJoin(id, guessWord ){
+    async createOrJoin(id,playerName){
         try {
             let auth = await this.authenticate();
             console.log(auth)
-            let result = await this.joinGame(id, auth.id)
+            let result = await this.joinGame(id,playerName, auth.id)
             if (result == null){
-                result = this.createGame(id, auth.id, guessWord)
+                result = this.createGame(id,playerName, auth.id)
             }
             return result;
         } catch (e){
             console.log(e)
         }
     }
-    async joinGame(id, authId){
+    async joinGame(id,playerName, authId){
         try {
             let result = await this.collection.findOne({"_id": id})
+            const newParticipant = {
+                userId: authId,
+                guess: "",
+                score: 0,
+                playerName: playerName,
+                isOwner: false,
+                isDrawer: false,
+                isCorrect: false
+            }
             if (result != null){
                 this.game = new Phaser.Game(this.phaserConfig);
                 this.authId = authId;
                 this.ownerId = result.owner_id;
                 this.guessWord = result.guessWord;
                 this.gameId = id;
+                this.participants = result.participants;
                 this.guessCount = result.guessCount
                 this.score = result.score
                 this.strokes = result.stroke;
+                this.playerName = playerName
                 document.getElementById("score").textContent = "Correct: " + result.score +"/20";
                 document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
                 console.log(this)
@@ -170,16 +241,38 @@ class Game {
                     "ownerId": result.owner_id,
                     "strokes": result.strokes,
                     "score": result.score,
+                    "participants": result.participants,
                     "guessCount": result.guessCount,
+                    "playerName": this.playerName,
                     "guessWord": result.guessWord
                 })
+                await this.collection.updateOne(
+                    {"_id": id},
+                    {
+                        "$push": {
+                            "participants": newParticipant
+                        }
+                    }
+                ).then(result => {console.log(result)}, error =>console.error(error))
             }
+            
             return result;
         } catch(e){
             console.error(e)
         }
     }
-    async createGame(id, authId){
+    async createGame(id,playerName, authId){
+        const owner = {
+            userId: authId,
+            guess: "",
+            score: 0,
+            isOwner: true,
+            isDrawer: true,
+            isCorrect: false,
+            playerName: playerName,
+        }
+        const participants =[]
+        participants.push(owner)
         try {
             let game = await this.collection.insertOne({
                 "_id": id,
@@ -187,14 +280,17 @@ class Game {
                 "strokes": [],
                 "guessWord": "",
                 "guessCount": 0,
-                "score": 0
+                "score": 0,
+                "participants": participants
             })
             this.game = new Phaser.Game(this.phaserConfig);
             this.authId = authId;
+            this.participants= participants;
             this.ownerId = authId;
             this.guessWord = "";
             this.gameId= id;
             this.guessCount =0;
+            this.playerName = playerName
             this.score = 0;
             this.strokes = [];
             console.log(this)
@@ -206,7 +302,9 @@ class Game {
                 "score": 0,
                 "guessCount": 0,
                 "strokes": [],
-                "guessWord": ""
+                "guessWord": "",
+                "playerName": this.playerName,
+                "participants":participants
             })
             document.getElementById("score").textContent = "Correct: " + this.score +"/20";
             document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
@@ -234,12 +332,31 @@ class Game {
         
     }
     async leaveGame(){
-        await this.collection.deleteOne(
-            {
-                "_id": this.gameId,
-                "owner_id": this.authId
-            }
-        ).then(result => {console.log(result)}, error =>console.error(error))
+        const newParticipants = []
+        if (this.authId != this.ownerId){
+            this.participants.map(participant=>{
+                if (participant.userId != this.authId){
+                    newParticipants.push(participant)
+                }
+            })
+            await this.collection.updateOne(
+                {
+                    "_id": this.gameId,
+                },
+                {
+                    "$set":{
+                        "participants": newParticipants
+                    }
+                }
+            ).then(result => {console.log(result)}, error =>console.error(error))
+        } else {
+            await this.collection.deleteOne(
+                {
+                    "_id": this.gameId,
+                    "owner_id": this.authId
+                }
+            ).then(result => {console.log(result)}, error =>console.error(error))
+        }
         window.location.href="/"
     }
     async startOver(newWord){

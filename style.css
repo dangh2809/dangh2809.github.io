@@ -25,7 +25,28 @@
     font-weight: bold;
     font-style: italic;
   }
-  
+.player {
+    display:flex; height: 100px; background-color: black;
+    border-bottom: black solid 2px;
+}
+.playerAvatar{
+    display: flex; flex-direction: column;justify-content: center; width:30%; background-color: #8BF1DF;
+}
+.playerImage{
+    object-fit:scale-down;max-width: 100%; max-height: 40px; margin:0px; padding:0px
+}
+.playerName {
+    word-wrap: break-word; text-align: center; margin:0px; padding:0px;
+}
+.playerContext{
+    flex: 1;display: flex; flex-direction: column; background-color: #25AA31;
+}
+.playerGuess{
+    flex: 1
+}
+.playerScore{
+    flex: 1
+}
   /* Rest of your CSS code */
   
 @mixin bubble_shape ($width: 4px) {
