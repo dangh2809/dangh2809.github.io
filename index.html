@@ -49,7 +49,7 @@
     </style>
 </head>
 <body>
-    <div>
+    <!-- <div>
         <div class="small-glows"></div>
 
         <div class="glow"><div class="sun"></div></div>
@@ -68,10 +68,20 @@
         </div>
 
         <div class="clouds"></div>
-    </div>
+    </div> -->
     
-    <div style="z-index: 2000; position:relative; margin-top:10px; ">
-        <div id="createGame" style="background-color: #25AA31; padding: 20px 50px; border:#8BF1DF solid 10px;position:fixed;border-radius: 10px;top:50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; justify-content: space-between;" >
+    <div style="z-index: 2000; margin-top:10px; ">
+        <div id="createGame" style="background-color: #25AA31; 
+                                    padding: 20px 50px; 
+                                    border:#8BF1DF solid 10px;
+                                    position:fixed;
+                                    border-radius: 10px;
+                                    top:50%; 
+                                    left: 50%; 
+                                    transform: translate(-50%, -50%); 
+                                    display: flex; 
+                                    flex-direction: column; 
+                                    justify-content: space-between;" >
             <h1 style="text-align: center; color:#fff;">Scrible Master</h1>
             <input style="margin: 10px 0px; text-align: center;"id="gameid" type="text" placeholder="GameID" />
             <button style="margin: 10px 0px" id="createOrJoinBtn" type="button" onclick="joinOrCreateGame()">Create / Join</button>
@@ -83,26 +93,46 @@
             </div>
             <div class="marginAlign">
                 <h3 id="text2"></h3>
-                <div style="display: flex; justify-content: flex-end; margin-right: 10vw">
+                <div style="display: flex; justify-content: flex-end; margin-right: 30px">
                     <h4 id="score">Correct: </h4>
                     <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
                 </div>
-            <div class="marginAlign" id="gameBtn" style="display: flex; flex-direction: row-reverse">
-                <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Skip</button>
-                <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
-                <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
-            </div class="marginAlign">
+                <div class="marginAlign" id="gameBtn" style="display: flex; flex-direction: row-reverse">
+                    <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Skip</button>
+                    <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
+                    <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
+                </div>
                 <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
             </div>
-            <div id="phaserContainer" style=" display: flex; flex-direction: column;z-index: 2000;position: relative; border-top: #25AA31 solid 10px; border-top: #25AA31 solid 10px; color:black">
-                <div style="position: absolute; top: 0px; left: 50%;">
-                    <h3 style=" text-align: center;"id="curWord">guessWord</h3>
-                    <h4 style="text-align: center; color: black"id="timer"></h4>
+            <div style="display: flex; background-color:lightcoral; justify-content: center;">
+                <div id="phaserContainer" style="width: 70%;position: relative;z-index: 2000; border: #25AA31 solid 10px; border-bottom: #25AA31 solid 10px; color:black">
+                    <div style="position: absolute; top: 0px; left: 50%;">
+                        <h3 style=" text-align: center;"id="curWord">guessWord</h3>
+                        <h4 style="text-align: center; color: black"id="timer">00:00</h4>
+                    </div>
+                    <div id="phaserCanvas" style="margin-right: 10px;">
+                        
+                    </div>
                 </div>
-                <div id="phaserCanvas" style="margin-right: 10px;">
-
+                <div id="playersList" style="flex:1; display: flex; flex-direction: column;justify-content: flex-start;height: 200px; background-color: lightblue;border: #FFD851 solid 5px">
+                    <div class="player" style="display:flex; height: 100px; background-color: black;">
+                        <div style="display: flex; flex-direction: column;justify-content: center; width:30%; background-color: #8BF1DF;">
+                            <img alt="avatar" src="./user-icon.png" style="object-fit:scale-down;max-width: 100%; max-height: 40px; margin:0px; padding:0px"/>
+                            <p style="word-wrap: break-word; text-align: center; margin:0px; padding:0px;">Hieu Dang</p>
+                        </div>
+                        <div style="flex: 1;display: flex; flex-direction: column; background-color: #25AA31;">
+                            <div id="playerGuess" style="flex: 1">
+                                Guess: ""
+                            </div>
+                            <div id="playerScore" style="flex:1">
+                                Score: 0
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
+
         </div>
         
     </div>
@@ -125,7 +155,7 @@
         document.getElementById("inGameContent").hidden = true;
         document.getElementById("gameOverContainer").style.visibility = "hidden";
         
-         
+        //document.getElementById("createGame").style.visibility= "hidden"
         const game = new Game({
             "id": "phaserCanvas",
             "width": window.innerWidth,
