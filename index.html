@@ -49,7 +49,7 @@
     </style>
 </head>
 <body>
-    <!-- <div>
+    <div>
         <div class="small-glows"></div>
 
         <div class="glow"><div class="sun"></div></div>
@@ -68,9 +68,9 @@
         </div>
 
         <div class="clouds"></div>
-    </div> -->
+    </div>
     
-    <div style="z-index: 2000; margin-top:10px; ">
+    <div style="z-index: 3000; margin-top:10px; position:relative">
         <div id="createGame" style="background-color: #25AA31; 
                                     padding: 20px 50px; 
                                     border:#8BF1DF solid 10px;
@@ -146,18 +146,42 @@
         </div>
         <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
     </div>
-    <div id="gameOverContainer" style="border-style:solid; z-index: 2000;border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
+    <!-- <div id="gameOverContainer" style="border-style:solid; z-index: 2000;border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
         <h3>Game Over</h3>
-        <button  id="playAgainBtn" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
-    </div>
+        <button  id="playAgain" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
+    </div> -->
     <div id="myModal" class="modal">
-        <div class="modal-content">
-          <h2>Results</h2>
-          <div>
-            Round end
-          </div>
+        <div id="modal-content" class="modal-content">
+            <h2>Results</h2>
+            <h3 id="revealWord"></h3>
+            <div id="playerResultsConainter" style="width: 100%; height: 100%; align-items: center;display:flex;flex-direction: column; justify-content: center;">
+                <!-- <div class="playerResults">
+                <div class="playerResult" >
+                    <div class="playerAvatar2" >
+                        <img class="playerImage" alt="avatar" src="./public/images/user-icon.png"/>
+                        <p class="playerName">Hieu Dang</p>
+                    </div>
+                    <div class="playerContext2">
+                        <div class="playerGuess" >
+                            Guess: ""
+                        </div>
+                        <div class="playerScore" >
+                            Score: 0
+                        </div>
+                    </div>
+                    <div class="playerTrend" id="trendIcon" >
+                        <img class="playerTrendImage" alt="trend-icon" src="./public/images/icons8-up-arrow-100.png" />
+                    </div>
+                </div>
+                </div> -->
+            </div>
+          
+            <div style="width:100%;display:flex; justify-content: space-evenly; margin: 10px">
+                <button  id="playAgainBtn" onclick="startOver()" type="button" style="background-color: skyblue; ">Start Over</button>
+                <button id="nextBtn" onclick="handleSkip()" type="button" style="background-color: skyblue; ">Next</button>
+            </div>
         </div>
-      </div>
+    </div>
     <script>
         document.getElementById("guessInput").addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
@@ -172,7 +196,7 @@
         // let collection = this.database.collection(config.collectionName);
         document.getElementById("bottomInGame").style.visibility= "hidden";
         document.getElementById("inGameContent").hidden = true;
-        document.getElementById("gameOverContainer").style.visibility = "hidden";
+        //document.getElementById("gameOverContainer").style.visibility = "hidden";
         document.getElementById("myModal").style.display="none"
         
         //document.getElementById("createGame").style.visibility= "hidden"
@@ -227,8 +251,9 @@
             await game.leaveGame();
         }
         async function startOver(){
+
             let newWord = generateWords();
-            await game.startOver("start");
+            await game.startOver(newWord);
         }
         async function updatePlayerGuess(guess){
             await game.updatePlayerGuess(guess);

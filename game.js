@@ -40,6 +40,7 @@ class Game {
         this.setParticipants = data.setParticipants;
         this.displayPlayers = data.displayPlayers
         this.setGuessWord = data.setGuessWord
+        this.displayPlayerResults = data.displayPlayerResults
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -49,7 +50,7 @@ class Game {
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
-        this.timer = new Timer(1,30)
+        this.timer = new Timer(0,20)
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
         })
@@ -58,6 +59,7 @@ class Game {
             console.log(event)
             let participants = event.fullDocument.participants;
             this.setParticipants(participants)
+            this.participants = participants;
             this.setGuessWord(event.fullDocument.guessWord)
             const playerListContainer = document.getElementById("playersList")
             playerListContainer.replaceChildren();
@@ -96,11 +98,11 @@ class Game {
                     continue;
                 }
                 else if (updatedField =="guessCount"){
-                    if (updatedFields[updatedField] >= 20){
-                        document.getElementById("gameOverContainer").style.visibility = "visible";
-                    } else {
-                        document.getElementById("gameOverContainer").style.visibility = "hidden";
-                    }
+                    // if (updatedFields[updatedField] >= 20){
+                    //     document.getElementById("gameOverContainer").style.visibility = "visible";
+                    // } else {
+                    //     document.getElementById("gameOverContainer").style.visibility = "hidden";
+                    // }
                     document.getElementById("remainGuess").textContent = `You have ${20-updatedFields[updatedField]} guesses left`;
                     continue
                 } else if (updatedField =="participants"){
@@ -120,6 +122,12 @@ class Game {
         // not allow participant to draw
         if (this.authId != this.ownerId){
             return
+        }
+        // if time is out, then stop timer and show results
+        if (this.timer.timeOut){
+            this.displayPlayerResults(this.participants)
+        } else {
+            document.getElementById("myModal").style.display="none"
         }
         if (!this.input.activePointer.isDown && this.isDrawing){
             this.collection.updateOne(
@@ -205,7 +213,8 @@ class Game {
                     "guessWord": result.guessWord,
                     "setParticipants": (newParticipants)=>{this.participants = newParticipants},
                     "displayPlayers": (participants)=>{this.displayPlayers(participants)},
-                    "setGuessWord": (guessWord)=>{this.guessWord = guessWord}
+                    "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
+                    "displayPlayerResults":(participants)=>{this.displayPlayerResults(participants)}
                 })
                 await this.collection.updateOne(
                     {"_id": id},
@@ -273,7 +282,8 @@ class Game {
                 "participants":this.participants,
                 "setParticipants": (newParticipants)=>{this.participants = newParticipants},
                 "displayPlayers": (participants)=>{this.displayPlayers(participants)},
-                "setGuessWord": (guessWord)=>{this.guessWord = guessWord}
+                "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
+                "displayPlayerResults":(participants)=>{this.displayPlayerResults(participants)}
             })
             console.log(this)
             document.getElementById("score").textContent = "Correct: " + this.score +"/20";
@@ -336,8 +346,12 @@ class Game {
     }
     async startOver(newWord){
         this.score = 0;
-        this.guessCount = 0;
+        this.guessCount = 1;
         this.guessWord = newWord;
+        // if (this.participants.length < 2){
+        //     alert("Game must be start with 2 or more people")
+        //     return
+        // }
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
@@ -400,8 +414,96 @@ class Game {
         }
         return hiddenWord
     }
-    displayPlayers(participants){
+    displayPlayerResults(participants){
+        document.getElementById("myModal").style.display="block"
+        if(this.guessCount ==20 && this.timer.timeOut){
+            document.getElementById("playAgainBtn").innerText="Play Again"
+            document.getElementById("nextBtn").style.visibility="hidden"
+        } else {
+            document.getElementById("playAgainBtn").innerText="Start Over"
+            document.getElementById("nextBtn").style.visibility="visible"
+        }
+        let revealWord = "";
+          for (let i =0; i< this.guessWord.length; i++){
+              if ( this.guessWord[i] === " "){
+                revealWord += "\xa0 \xa0"
+                  continue;
+              } 
+                revealWord += `${this.guessWord[i]} `
+          }
+        document.getElementById("revealWord").innerText = revealWord
+        const resultContainer = document.getElementById("playerResultsConainter")
+        resultContainer.replaceChildren()
+        participants.sort((a,b)=>a.score - b.score)
+        participants.map(participant=>{
+            const playerResults = document.createElement("div");
+            playerResults.classList.add("playerResults")
+            const playerResult = document.createElement("div");
+            playerResult.classList.add("playerResult")
+            const playerAvatar2 = document.createElement("div");
+            playerAvatar2.classList.add("playerAvatar2")
+            const playerImage = document.createElement("img");
+            playerImage.classList.add("playerImage")
+            playerImage.src="./public/images/user-icon.png"
+            const playerName = document.createElement("p");
+            playerName.classList.add("playerName")
+            playerName.innerHTML = participant.playerName;
+            const playerContext2 = document.createElement("div");
+            playerContext2.classList.add("playerContext2")
+            const playerGuess = document.createElement("div");
+            playerGuess.classList.add("playerGuess")
+            const playerScore = document.createElement("div");
+            playerScore.classList.add("playerScore")
+            // const playerTrend = document.createElement("div");
+            // playerTrend.classList.add("playerTrend")
+            // const playerTrendImage = document.createElement("img");
+            // playerTrendImage.classList.add("playerTrendImage")
+
+            if (this.guessWord == participant.guess){
+                playerGuess.innerHTML = participant.playerName + " guessed correctly!"
+                playerGuess.style.color = "green"
+            } else if (participant.isDrawer) {
+                playerGuess.innerHTML = "You are the Drawer"
+            } else {
+                playerGuess.innerHTML = participant.playerName + "did not guess correctly!"
+                playerGuess.style.color = "red"
+            }
+            playerScore.innerHTML = "Score: " + participant.score
+
+            playerAvatar2.appendChild(playerImage)
+            playerAvatar2.appendChild(playerName)
+            playerContext2.appendChild(playerGuess)
+            playerContext2.appendChild(playerScore)
+            //playerTrend.appendChild(playerTrendImage)
+            playerResult.appendChild(playerAvatar2)
+            playerResult.appendChild(playerContext2)
+            //playerResult.appendChild(playerTrend)
+            playerResults.appendChild(playerResult)
+            resultContainer.appendChild(playerResults)
+        })
+        // <!-- <div class="playerResults">
+        //     <div class="playerResult" >
+        //         <div class="playerAvatar2" >
+        //             <img class="playerImage" alt="avatar" src="./public/images/user-icon.png"/>
+        //             <p class="playerName">Hieu Dang</p>
+        //         </div>
+        //         <div class="playerContext2">
+        //             <div class="playerGuess" >
+        //                 Guess: ""
+        //             </div>
+        //             <div class="playerScore" >
+        //                 Score: 0
+        //             </div>
+        //         </div>
+        //         <div class="playerTrend" id="trendIcon" >
+        //             <img class="playerTrendImage" alt="trend-icon" src="./public/images/icons8-up-arrow-100.png" />
+        //         </div>
+        //     </div> -->
+    }
+    displayPlayers(participants, timer){
+        let isAllCorrect = true
         const playerListContainer = document.getElementById("playersList")
+        participants.sort((a,b)=>a.score - b.score)
         participants.map((participant)=>{
             const playerContainer = document.createElement("div")
             playerContainer.classList.add("player")
@@ -409,7 +511,7 @@ class Game {
             playerAvatar.classList.add("playerAvatar")
             const playerImage = document.createElement("img")
             playerImage.classList.add("playerImage")
-            playerImage.src= "./user-icon.png"
+            playerImage.src= "./public/images/user-icon.png"
             const playerName = document.createElement("p")
             playerName.classList.add("playerName")
             const playerContext = document.createElement("div")
@@ -438,7 +540,9 @@ class Game {
                 playerGuess.innerHTML =  participant.playerName +" joined game!";
                 document.getElementById("guessInput").disabled = false;
             }
-            
+            if (participant.guess != this.guessWord || this.guessWord == ""){
+                isAllCorrect = false
+            }
             playerName.innerHTML = participant.playerName;
             playerAvatar.appendChild(playerImage)
             playerAvatar.appendChild(playerName)
@@ -447,6 +551,13 @@ class Game {
             playerContainer.appendChild(playerAvatar)
             playerContainer.appendChild(playerContext)
             playerListContainer.appendChild(playerContainer)
+
+            if (isAllCorrect && !timer.timeOut){
+                document.getElementById("myModal").style.display="block"
+                timer.stop()
+            } else {
+                document.getElementById("myModal").style.display="none"
+            }
         })
     }
 
@@ -455,6 +566,8 @@ class Game {
         this.participants.map(participant=>{
             if (participant.userId != this.authId){
                 newParticipants.push(participant)
+            } else if (guess == this.guessWord) {
+                newParticipants.push({...participant, guess: guess, score: participant.score+1})
             } else {
                 newParticipants.push({...participant, guess: guess})
             }

@@ -10,6 +10,7 @@ class Timer {
     start(guessWord, isGuesser){
         // reset the clock
         clearInterval(this.timerInterval)
+        this.timeOut= false
         this.revealIndexes = [];
         this.timeleftMili = (60*this.minutes + this.second)*1000;
         document.getElementById("timer").style.color = "white";
