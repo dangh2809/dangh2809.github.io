@@ -16,7 +16,6 @@ class Timer {
         // Update the count down every 1 second
         this.timerInterval = setInterval(()=> {
         // Time calculations for minutes and second
-        console.log(this.revealIndexes)
         let minutes = Math.floor((this.timeleftMili % (1000 * 60 * 60)) / (1000 * 60));
         let seconds = Math.floor((this.timeleftMili % (1000 * 60)) / 1000);
         let giveHint = ((guessWord)=>{
@@ -44,7 +43,6 @@ class Timer {
         })
         if (minutes==1 && seconds ==0 && isGuesser){
 
-            console.log("is Guesser")
             // generate hidden word with one random character revealed
             document.getElementById("curWord").textContent = giveHint(guessWord)
         } else if (minutes==0 && seconds==30 && isGuesser){
@@ -70,15 +68,22 @@ class Timer {
               } 
                 revealWord += `${guessWord[i]} `
           }
+          //document.getElementById("myModal").style.display="block"
           document.getElementById("timer").textContent = "Time out!!!";
           document.getElementById("timer").style.color = "#FF0000";
           document.getElementById("curWord").textContent = revealWord;
         } else{
+            document.getElementById("myModal").style.display="none"
             this.timeleftMili -= 1000;
         }
        
       }, 1000);
       
     }
-    
+    stop(){
+        clearInterval(this.timerInterval)
+        this.revealIndexes = [];
+        this.timeleftMili = (60*this.minutes + this.second)*1000;
+        document.getElementById("timer").style.color = "white";
+    }
 }

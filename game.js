@@ -39,6 +39,7 @@ class Game {
         this.playerName = data.playerName;
         this.setParticipants = data.setParticipants;
         this.displayPlayers = data.displayPlayers
+        this.setGuessWord = data.setGuessWord
     }
     async createScene(){
         this.graphics = this.add.graphics();
@@ -57,9 +58,11 @@ class Game {
             console.log(event)
             let participants = event.fullDocument.participants;
             this.setParticipants(participants)
+            this.setGuessWord(event.fullDocument.guessWord)
             const playerListContainer = document.getElementById("playersList")
             playerListContainer.replaceChildren();
             this.displayPlayers(participants)
+            
             let updatedFields = event.updateDescription.updatedFields;
             for (let updatedField in updatedFields){
                 if (updatedField =="strokes" && updatedFields[updatedField].length == 0){
@@ -200,7 +203,9 @@ class Game {
                     "guessCount": result.guessCount,
                     "playerName": this.playerName,
                     "guessWord": result.guessWord,
-                    "setParticipants": (newParticipants)=>{this.participants = newParticipants}
+                    "setParticipants": (newParticipants)=>{this.participants = newParticipants},
+                    "displayPlayers": (participants)=>{this.displayPlayers(participants)},
+                    "setGuessWord": (guessWord)=>{this.guessWord = guessWord}
                 })
                 await this.collection.updateOne(
                     {"_id": id},
@@ -267,7 +272,8 @@ class Game {
                 "playerName": this.playerName,
                 "participants":this.participants,
                 "setParticipants": (newParticipants)=>{this.participants = newParticipants},
-                "displayPlayers": (participants)=>{this.displayPlayers(participants)}
+                "displayPlayers": (participants)=>{this.displayPlayers(participants)},
+                "setGuessWord": (guessWord)=>{this.guessWord = guessWord}
             })
             console.log(this)
             document.getElementById("score").textContent = "Correct: " + this.score +"/20";
@@ -343,11 +349,7 @@ class Game {
                 "guessWord": this.guessWord
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
-        // document.getElementById("score").textContent = "Correct: " + this.score +"/20";
-        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
-        // document.getElementById("gameOverContainer").style.visibility = "hidden";
-        // let timer = new Timer(1,30);
-        // timer.start(this.guessWord)
+
     }
     async addScore(newWord){
         console.log(this)
@@ -366,10 +368,7 @@ class Game {
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
         await this.skipWord(newWord)
-        // let timer = new Timer(1,30);
-        // timer.start(this.guessWord)
-        // document.getElementById("score").textContent = "Correct: " + this.score +"/20"
-        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+
     }
     async skipWord(newWord){
         if (this.authId != this.ownerId){
@@ -387,10 +386,7 @@ class Game {
                 "guessCount": this.guessCount
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
-        // document.getElementById("curWord").textContent = this.guessWord;
-        // let timer = new Timer(1,30);
-        // timer.start(this.guessWord)
-        // document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
+       
     }
   
     hidTheWord(word){
@@ -422,20 +418,25 @@ class Game {
             playerGuess.classList.add("playerGuess")
             const playerScore = document.createElement("div")
             playerScore.classList.add("playerScore")
+            console.log(participant.guess + " " +this.guessWord)
+            console.log(this)
             // check if guess is correct
             if (participant.isDrawer && this.guessWord.length > 0){
                 playerGuess.innerHTML = "You are the drawer"
             } else if (participant.guess != this.guessWord){
-                playerGuess.innerHTML = "Guess: " + participant.guess
+                playerGuess.innerHTML = "Guess: " + participant.guess;
                 playerScore.innerHTML = "Score: " + participant.score;
-            } else if (participant.guess == this.guessWord && this.guessWord != ""){
+            } else if (participant.guess == this.guessWord && this.guessWord != "" && !participant.isDrawer){
+                console.log("correct")
                 playerGuess.innerHTML = participant.playerName + " guessed correctly!"
+                document.getElementById("guessInput").disabled = true;
                 playerGuess.style.color = "green"
                 playerScore.innerHTML = "Score: " + participant.score;
             } else if (participant.userId == this.ownerId){
                 playerGuess.innerHTML =  "You are here"
             }else{
-                playerGuess.innerHTML =  participant.playerName +" joined game!"
+                playerGuess.innerHTML =  participant.playerName +" joined game!";
+                document.getElementById("guessInput").disabled = false;
             }
             
             playerName.innerHTML = participant.playerName;
@@ -446,6 +447,26 @@ class Game {
             playerContainer.appendChild(playerAvatar)
             playerContainer.appendChild(playerContext)
             playerListContainer.appendChild(playerContainer)
-    })
+        })
     }
+
+    async updatePlayerGuess(guess){
+        let newParticipants = []
+        this.participants.map(participant=>{
+            if (participant.userId != this.authId){
+                newParticipants.push(participant)
+            } else {
+                newParticipants.push({...participant, guess: guess})
+            }
+        })
+        await this.collection.updateOne(
+            {"_id":this.gameId},
+            {
+                "$set":{
+                    "participants": newParticipants
+                } 
+            }
+        ).then(result => {console.log(result)}, error =>console.error(error))
+    }
+
 }

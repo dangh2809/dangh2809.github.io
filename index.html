@@ -102,7 +102,7 @@
                     <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
                 </div>
                 <div class="marginAlign" id="gameBtn" style="display: flex; flex-direction: row-reverse">
-                    <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Skip</button>
+                    <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Next</button>
                     <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
                     <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
                 </div>
@@ -136,7 +136,7 @@
                     
                 </div>
             </div>
-
+            <input id="guessInput" type="text">
         </div>
         
     </div>
@@ -150,14 +150,30 @@
         <h3>Game Over</h3>
         <button  id="playAgainBtn" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
     </div>
-   
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+          <h2>Results</h2>
+          <div>
+            Round end
+          </div>
+        </div>
+      </div>
     <script>
+        document.getElementById("guessInput").addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevent form submission or page reload
+
+            // Call your function here
+            updatePlayerGuess(document.getElementById("guessInput").value);
+        }
+        });
         // let client = stitch.Stitch.initializeDefaultAppClient(config.realmAppId);
         // let database = this.client.getServiceClient(stitch.RemoteMongoClient.factory, "mongodb-atlas").db(config.databaseName);
         // let collection = this.database.collection(config.collectionName);
         document.getElementById("bottomInGame").style.visibility= "hidden";
         document.getElementById("inGameContent").hidden = true;
         document.getElementById("gameOverContainer").style.visibility = "hidden";
+        document.getElementById("myModal").style.display="none"
         
         //document.getElementById("createGame").style.visibility= "hidden"
         const game = new Game({
@@ -187,6 +203,7 @@
                 document.getElementById("text2").textContent = "You are the owner of this room"
                 document.getElementById("curWord").textContent = game.guessWord;
                 document.getElementById("roleText").textContent = "You are the Drawer";
+                document.getElementById("guessInput").style.visibility="hidden"
             } else {
                 document.getElementById("gameBtn").style.visibility="hidden"
                 document.getElementById("playAgainBtn").style.visibility="hidden"
@@ -211,9 +228,11 @@
         }
         async function startOver(){
             let newWord = generateWords();
-            await game.startOver(newWord);
+            await game.startOver("start");
         }
-        
+        async function updatePlayerGuess(guess){
+            await game.updatePlayerGuess(guess);
+        }
         async function handleSkip(){
             let newWord = generateWords();
             await game.skipWord(newWord);
