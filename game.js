@@ -3,15 +3,18 @@ class Game {
         this.phaserConfig={
             type: Phaser.AUTO,
             parent: config.id,
+            // width: 1080,
+            // hieght: 700,
             // width: config.width,
             // height: config.height,
+            canvasStyle:"height: 100%; width:100%",
             backgroundColor: 0xFFFFFF,
             // canvasStyle: "background-color: #ffff",
-            scale: {
-                mode: Phaser.Scale.FIT,
-                parent: config.id,
-                // autoCenter: Phaser.Scale.CENTER_BOTH,
-            },
+            // scale: {
+            //     mode: Phaser.Scale.FIT,
+            //     parent: config.id,
+            //     // autoCenter: Phaser.Scale.CENTER_BOTH,
+            // },
             scene: {
                 key:"default",
                 init: this.initScene,
