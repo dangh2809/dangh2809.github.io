@@ -58,7 +58,17 @@ class Timer {
         
         // If the count down is finished, write some text
         if (this.timeleftMili <= 0) {
-            this.timeOut=true;
+            this.stop(guessWord)
+        } else{
+            document.getElementById("myModal").style.display="none"
+            this.timeleftMili -= 1000;
+        }
+       
+      }, 1000);
+      
+    }
+    stop(guessWord){
+        this.timeOut=true;
             this.revealIndexes=[]
           clearInterval(this.timerInterval);
           let revealWord = "";
@@ -73,18 +83,5 @@ class Timer {
           document.getElementById("timer").textContent = "Time out!!!";
           document.getElementById("timer").style.color = "#FF0000";
           document.getElementById("curWord").textContent = revealWord;
-        } else{
-            document.getElementById("myModal").style.display="none"
-            this.timeleftMili -= 1000;
-        }
-       
-      }, 1000);
-      
-    }
-    stop(){
-        clearInterval(this.timerInterval)
-        this.revealIndexes = [];
-        this.timeleftMili = (60*this.minutes + this.second)*1000;
-        document.getElementById("timer").style.color = "white";
     }
 }

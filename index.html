@@ -68,6 +68,10 @@
 </head>
 <body>
     <div>
+        <div class="cartoonist-hearts-container">
+           
+            <!-- Add more heart elements with different animation delays -->
+          </div>
         <div class="sun"></div></div>
         <div id="waves-mounts">
             <div class="glow"></div>
@@ -116,6 +120,9 @@
                 <div id="name"  style="z-index: 3000" class="marginAlign cartoonist-div2"display="display:none">
                     Your Name: 
                 </div>
+                <div id="roleText" style="z-index: 3000" class=" marginAlign cartoonist-div2">
+                    You are not in a game
+                </div>
             </div>
             
             <div class="marginAlign"  style="z-index: 3000">
@@ -124,15 +131,18 @@
                     <input id="guessInput" class="cartoonist-input" type="text"  placeholder="Enter your guess">
                 </div>
                 <div style="z-index: 3000;display: flex; justify-content: flex-end; margin-right: 30px">
-                    <h4 id="score">Correct: </h4>
-                    <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
+                    
+                    <div id="gameBtn" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 0px 10px;">
+                        <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
+                        <button id="startBtn" onclick="startOver()" type="button" style="background-color: #0195CF;margin-right: 10px; ">Start</button>
+                    </div>
                 </div>
-                <div class="marginAlign" id="gameBtn" style="z-index: 3000;display: flex; flex-direction: row-reverse">
-                    <!-- <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Next</button>
-                    <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button> -->
-                    <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
+                
+                <div style="display: flex; justify-content: space-between;">
+                    <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
+                    <h3 id="remainGuess" style="margin-left: 20px;">Round: 0/20</h3>
                 </div>
-                <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
+                
             </div>
             <div style="width:100%;display: flex; justify-content: center;">
                 <div id="phaserContainer" style="flex: 4;width: 70%;position: relative;z-index: 2000; color:black">
@@ -150,13 +160,13 @@
             </div>
         </div>   
     </div>
-    <div id="bottomInGame" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 10px 10px;">
+    <!-- <div id="bottomInGame" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 10px 10px;">
         <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
         <div style=" background-color: #25AA31; padding-right:10px; padding-left: 10px; padding-top:2px; padding-bottom: 2px">
             <h4 id="roleText">You are not in a game</h4>
         </div>
        
-    </div>
+    </div> -->
     <!-- <div id="gameOverContainer" style="border-style:solid; z-index: 2000;border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
         <h3>Game Over</h3>
         <button  id="playAgain" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
@@ -176,6 +186,19 @@
         </div>
     </div>
     <script>
+        const container = document.querySelector('.cartoonist-hearts-container');
+        const numHearts = 80; // Number of hearts to generate
+
+        for (let i = 0; i < numHearts; i++) {
+            const heart = document.createElement('span');
+            heart.innerHTML="Rosie"
+            heart.classList.add('cartoonist-heart');
+            const randomX = Math.floor(Math.random() * 100); // Generate random value between 0-100
+            heart.style.setProperty('--random-x', `${randomX}`);
+            const randAni = Math.floor(Math.random()*10)
+            heart.style.animationDelay = `${0.5892*i}s`
+            container.appendChild(heart);
+        }
         document.getElementById("guessInput").addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
             event.preventDefault(); // Prevent form submission or page reload
@@ -185,7 +208,6 @@
         }
         });
         
-        document.getElementById("bottomInGame").style.display= "none";
         document.getElementById("inGameContent").style.display = "none";
         //document.getElementById("gameOverContainer").style.visibility = "hidden";
         document.getElementById("myModal").style.display="none"
@@ -208,10 +230,9 @@
             await game.createOrJoin(document.getElementById("gameid").value,document.getElementById("playerName").value);
             document.getElementById("clouds").style.zIndex = "-1";
             document.getElementById("gameiddisplay").textContent = "Game ID: " + game.gameId
-            document.getElementById("name").textContent = game.playerName;
+            document.getElementById("name").textContent = "Your name: "+game.playerName;
             document.getElementById("createGame").style.display= "none";
             document.getElementById("waves-mounts").style.display= "none";
-            document.getElementById("bottomInGame").style.display= "flex";
             document.getElementById("inGameContent").style.display ="block";
             if (game.authId == game.ownerId){
                 document.getElementById("text2").textContent = "You are the owner of this room"
@@ -222,6 +243,7 @@
                 // document.getElementById("gameBtn").disabled=true
                 // document.getElementById("playAgainBtn").disabled=true
                 document.getElementById("playAgainBtn").disabled=true
+                document.getElementById("nextBtn").disabled=true
                 document.getElementById("text2").textContent = "You are not the owner of this room" 
                 document.getElementById("roleText").textContent = "You are the Guesser";
             }

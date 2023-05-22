@@ -7,7 +7,7 @@ class Game {
             // hieght: 700,
             // width: config.width,
             // height: config.height,
-            canvasStyle:"height: 100%; width:100%; border-radius: 10px",
+            canvasStyle:"height: 100%; width:100%; border-radius: 10px; max-height: 600px",
             backgroundColor: 0xFFFFFF,
             // canvasStyle: "background-color: #ffff",
             // scale: {
@@ -36,7 +36,6 @@ class Game {
         this.ownerId = data.ownerId;
         this.strokes = data.strokes;
         this.guessWord = data.guessWord;
-        this.score = data.score;
         this.guessCount = data.guessCount;
         this.participants= data.participants;
         this.playerName = data.playerName;
@@ -48,12 +47,14 @@ class Game {
     async createScene(){
         this.graphics = this.add.graphics();
         this.graphics.lineStyle(4, 0x0025aa31)
+        console.log(this)
         this.strokes.forEach(stroke=>{
             this.path = new Phaser.Curves.Path();
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
         this.timer = new Timer(0,20)
+        this.displayPlayers(this.participants, this.timer)
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
         })
@@ -63,10 +64,11 @@ class Game {
             let participants = event.fullDocument.participants;
             this.setParticipants(participants)
             this.participants = participants;
+            this.guessWord = event.fullDocument.guessWord
             this.setGuessWord(event.fullDocument.guessWord)
             const playerListContainer = document.getElementById("playersList")
             playerListContainer.replaceChildren();
-            this.displayPlayers(participants)
+            this.displayPlayers(participants, this.timer)
             
             let updatedFields = event.updateDescription.updatedFields;
             for (let updatedField in updatedFields){
@@ -78,9 +80,9 @@ class Game {
                     changeStreamPath.fromJSON(updatedFields[updatedField][0])
                     changeStreamPath.draw(this.graphics)
                     continue;
-                } else if (updatedField =="score") {
-                    document.getElementById("score").textContent = "Correct: " + updatedFields[updatedField] +"/20";
-                    continue;
+                // } else if (updatedField =="score") {
+                //     // document.getElementById("score").textContent = "Correct: " + updatedFields[updatedField] +"/20";
+                //     continue;
                 } else if (updatedField =="guessWord"){
                     if (this.authId != this.ownerId){
                         let hiddenWord="";
@@ -123,9 +125,9 @@ class Game {
     updateScene(){
         
         // if time is out, then stop timer and show results
-        if (this.timer.timeOut){
+        if (this.guessWord != "" && this.timer.timeOut){
             console.log("timeOut")
-            this.displayPlayerResults(this.participants)
+            this.displayPlayerResults(this.participants, this.timer)
         } else {
             document.getElementById("myModal").style.display="none"
         }
@@ -198,28 +200,25 @@ class Game {
                 this.gameId = id;
                 this.participants = result.participants;
                 this.guessCount = result.guessCount
-                this.score = result.score
                 this.strokes = result.stroke;
                 this.playerName = playerName;
-                document.getElementById("score").textContent = "Correct: " + result.score +"/20";
-                document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
-                console.log(this)
-                console.log(result)
+                // document.getElementById("score").textContent = "Correct: " + result.score +"/20";
+                document.getElementById("remainGuess").textContent = `Round: ${this.guessCount}/20`;
+                this.participants.push(newParticipant)
                 await this.game.scene.start("default", {
                     "gameId": id,
                     "collection": this.collection,
                     "authId": authId,
                     "ownerId": result.owner_id,
                     "strokes": result.strokes,
-                    "score": result.score,
-                    "participants": result.participants,
+                    "participants": this.participants,
                     "guessCount": result.guessCount,
                     "playerName": this.playerName,
                     "guessWord": result.guessWord,
                     "setParticipants": (newParticipants)=>{this.participants = newParticipants},
-                    "displayPlayers": (participants)=>{this.displayPlayers(participants)},
+                    "displayPlayers": (participants, timer)=>{this.displayPlayers(participants, timer)},
                     "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
-                    "displayPlayerResults":(participants)=>{this.displayPlayerResults(participants)}
+                    "displayPlayerResults":(participants, timer)=>{this.displayPlayerResults(participants, timer)}
                 })
                 await this.collection.updateOne(
                     {"_id": id},
@@ -230,10 +229,8 @@ class Game {
                     }
                 ).then(result => {
                     console.log(result);
-                    this.participants.push(newParticipant)
-                    this.displayPlayers(this.participants)
                 }, error =>console.error(error))
-              
+
             }
         
             return result;
@@ -271,7 +268,6 @@ class Game {
             this.gameId= id;
             this.guessCount =0;
             this.playerName = playerName
-            this.score = 0;
             this.strokes = [];
             console.log(this)
             await this.game.scene.start("default", {
@@ -279,21 +275,20 @@ class Game {
                 "collection": this.collection,
                 "authId": authId,
                 "ownerId": authId,
-                "score": 0,
                 "guessCount": 0,
                 "strokes": [],
                 "guessWord": "",
                 "playerName": this.playerName,
                 "participants":this.participants,
                 "setParticipants": (newParticipants)=>{this.participants = newParticipants},
-                "displayPlayers": (participants)=>{this.displayPlayers(participants)},
+                "displayPlayers": (participants, timer)=>{this.displayPlayers(participants, timer)},
                 "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
-                "displayPlayerResults":(participants)=>{this.displayPlayerResults(participants)}
+                "displayPlayerResults":(participants, timer)=>{this.displayPlayerResults(participants, timer)}
             })
             console.log(this)
-            document.getElementById("score").textContent = "Correct: " + this.score +"/20";
-            document.getElementById("remainGuess").textContent = `You have ${20-this.guessCount} guesses left`;
-            this.displayPlayers(participants)
+            // document.getElementById("score").textContent = "Correct: " + this.score +"/20";
+            document.getElementById("remainGuess").textContent = `Round: ${this.guessCount}/20`;
+            
         } catch(e){
             console.log(e)
         }
@@ -350,7 +345,6 @@ class Game {
         window.location.href="/"
     }
     async startOver(newWord){
-        this.score = 0;
         this.guessCount = 1;
         this.guessWord = newWord;
         // if (this.participants.length < 2){
@@ -363,42 +357,41 @@ class Game {
                 "owner_id": this.authId
             },{
             "$set": {
-                "score": this.score,
                 "guessCount": this.guessCount,
                 "guessWord": this.guessWord
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
 
     }
-    async addScore(newWord){
-        console.log(this)
-        if (this.authId != this.ownerId){
-            return
-        }
-        console.log(this)
-        this.score = this.score + 1;
-        await this.collection.updateOne(
-            {
-                "_id": this.gameId,
-                "owner_id": this.authId
-            },{
-            "$set": {
-                "score": this.score 
-            }
-        }).then(result => {console.log(result)}, error =>console.error(error))
-        await this.skipWord(newWord)
+    // async addScore(newWord){
+    //     console.log(this)
+    //     if (this.authId != this.ownerId){
+    //         return
+    //     }
+    //     console.log(this)
+    //     await this.collection.updateOne(
+    //         {
+    //             "_id": this.gameId,
+    //             "owner_id": this.authId
+    //         },{
+    //         "$set": {
+    //             "score": this.score 
+    //         }
+    //     }).then(result => {console.log(result)}, error =>console.error(error))
+    //     await this.skipWord(newWord)
 
-    }
+    // }
     async skipWord(newWord){
         if (this.authId != this.ownerId){
             return
         }
         this.guessWord = newWord;
         this.guessCount++;
-        let newParticipants;
+        let newParticipants= [];
         this.participants.map(participant=>{
             newParticipants.push({...participant, guess: ""})
         })
+        this.participants = newParticipants
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
@@ -407,7 +400,7 @@ class Game {
             "$set": {
                 "guessWord": this.guessWord,
                 "guessCount": this.guessCount,
-                "participants": this.newParticipants
+                "participants": this.participants
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
        
@@ -424,9 +417,9 @@ class Game {
         }
         return hiddenWord
     }
-    displayPlayerResults(participants){
+    displayPlayerResults(participants, timer){
         document.getElementById("myModal").style.display="block"
-        if(this.guessCount ==20 && this.timer.timeOut){
+        if(this.guessCount ==20 && timer.timeOut){
             document.getElementById("playAgainBtn").innerText="Play Again"
             document.getElementById("nextBtn").style.display="none"
         } else {
@@ -441,11 +434,15 @@ class Game {
               } 
                 revealWord += `${this.guessWord[i]} `
           }
-        document.getElementById("revealWord").innerText = revealWord
+       
         const resultContainer = document.getElementById("playerResultsConainter")
         resultContainer.replaceChildren()
         participants.sort((a,b)=>a.score - b.score)
+        console.log(participants)
         participants.map(participant=>{
+            if (participant.guess != ""){
+                document.getElementById("revealWord").innerText = revealWord
+            } 
             const playerResults = document.createElement("div");
             playerResults.classList.add("playerResults")
             const playerResult = document.createElement("div");
@@ -512,6 +509,7 @@ class Game {
     }
     displayPlayers(participants, timer){
         let isAllCorrect = true
+        console.log(this)
         const playerListContainer = document.getElementById("playersList")
         participants.sort((a,b)=>a.score - b.score)
         participants.map((participant)=>{
@@ -550,7 +548,7 @@ class Game {
             }else{
                 playerGuess.innerHTML =  participant.playerName +" joined game!";
             }
-            if (participant.guess != this.guessWord || this.guessWord == ""){
+            if (!participant.isDrawer && participant.guess != this.guessWord || this.guessWord == "" ){
                 isAllCorrect = false
             }
             playerName.innerHTML = participant.playerName;
@@ -562,11 +560,11 @@ class Game {
             playerContainer.appendChild(playerContext)
             playerListContainer.appendChild(playerContainer)
 
-            if (isAllCorrect && !timer.timeOut){
-                document.getElementById("myModal").style.display="block"
-                timer.stop()
+            if (isAllCorrect && this.guessWord != ""){
+                timer.stop(this.guessWord)
+                console.log("all correct")
             } else {
-                document.getElementById("myModal").style.display="none"
+                console.log("not all correct")
             }
         })
     }
