@@ -347,10 +347,10 @@ class Game {
     async startOver(newWord){
         this.guessCount = 1;
         this.guessWord = newWord;
-        // if (this.participants.length < 2){
-        //     alert("Game must be start with 2 or more people")
-        //     return
-        // }
+        if (this.participants.length < 2){
+            alert("Game must be start with 2 or more people")
+            return
+        }
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
