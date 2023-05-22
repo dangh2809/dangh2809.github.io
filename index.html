@@ -22,7 +22,8 @@
         input{
             font-family: 'ComicSan';
         }
-        button {
+        button 
+        {
             display: inline-block;
             padding: 10px 20px;
             border-radius: 10px;
@@ -34,49 +35,67 @@
             text-align: center;
             text-decoration: none;
             cursor: pointer;
-            }
-            /*#createOrJoinBtn text */
-            button span {
-            position: relative;
-            z-index: 1;
-            }
-            button:hover {
-                transform: scale(1.05);
-            }
+        }
+        button span {
+        position: relative;
+        z-index: 1;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:disabled{
+            background-color: grey;
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
         .marginAlign{
             margin: 10px
+        }
+        .cartoonist-div2 
+        {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #25AA31;
+            border: none;
+            color: #000;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <div>
-        <div class="small-glows"></div>
-
-        <div class="glow"><div class="sun"></div></div>
-
-        <div class="waves">
-            <div class="top_wave"></div>
-            <div class="wave1"></div>
-            <div class="wave2"></div>
-            <div class="wave3"></div>
-            <div class="wave4"></div>
+        <div class="sun"></div></div>
+        <div id="waves-mounts">
+            <div class="glow"></div>
+            <div class="small-glows"></div>
+            <div class="waves">
+                <div class="top_wave"></div>
+                <div class="wave1"></div>
+                <div class="wave2"></div>
+                <div class="wave3"></div>
+                <div class="wave4"></div>
+            </div>
+    
+            <div class="mounts">
+                <div class="mount1"></div>
+                <div class="mount2"></div>
+            </div>
         </div>
-
-        <div class="mounts">
-            <div class="mount1"></div>
-            <div class="mount2"></div>
-        </div>
-
-        <div class="clouds"></div>
+        <div id="clouds" class="clouds"></div>
     </div>
     
-    <div style="z-index: 3000; margin-top:10px; position:relative">
+    <div style="z-index: 2000; margin-top:10px;">
         <div id="createGame" style="background-color: #25AA31; 
                                     padding: 20px 50px; 
                                     border:#8BF1DF solid 10px;
                                     position:fixed;
                                     border-radius: 10px;
                                     top:50%; 
+                                    z-index: 2000;
                                     left: 50%; 
                                     transform: translate(-50%, -50%); 
                                     display: flex; 
@@ -88,63 +107,55 @@
             <button style="margin: 10px 0px" id="createOrJoinBtn" type="button" onclick="joinOrCreateGame()">Create / Join</button>
             <!-- <button id="leaveGameBtn" type="button" onclick="leaveGame()">leave</button> -->
         </div>
-        <div id="inGameContent">
-            <div id="gameiddisplay" class="marginAlign"display="display:none">
-                Game ID:
+        <div id="inGameContent" style="z-index: 3000"> 
+            <div  style="z-index: 3000" >
+                <div id="gameiddisplay" style="z-index: 3000" class="marginAlign cartoonist-div2"display="display:none" >
+                    Game ID:
+                </div>
+                
+                <div id="name"  style="z-index: 3000" class="marginAlign cartoonist-div2"display="display:none">
+                    Your Name: 
+                </div>
             </div>
-            <div id="name" class="marginAlign"display="display:none">
-                Game ID:
-            </div>
-            <div class="marginAlign">
-                <h3 id="text2"></h3>
-                <div style="display: flex; justify-content: flex-end; margin-right: 30px">
+            
+            <div class="marginAlign"  style="z-index: 3000">
+                <h3  style="z-index: 3000"  id="text2"></h3>
+                <div  id="guessInputContainer" style="z-index: 3000;width: 100%; padding: 10px 10px;display:flex; justify-content: center; align-items: center;">
+                    <input id="guessInput" class="cartoonist-input" type="text"  placeholder="Enter your guess">
+                </div>
+                <div style="z-index: 3000;display: flex; justify-content: flex-end; margin-right: 30px">
                     <h4 id="score">Correct: </h4>
                     <h4 id="remainGuess" style="margin-left: 20px;">You have: 0 left</h4>
                 </div>
-                <div class="marginAlign" id="gameBtn" style="display: flex; flex-direction: row-reverse">
-                    <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Next</button>
-                    <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button>
+                <div class="marginAlign" id="gameBtn" style="z-index: 3000;display: flex; flex-direction: row-reverse">
+                    <!-- <button id="skipBtn" onclick="handleSkip()" type="button" style="background-color: lightcoral;margin-right: 10px; ">Next</button>
+                    <button id="correctBtn" onclick="handleCorrect()" type="button" style="background-color: lightgreen;margin-right: 10px; ">Correct</button> -->
                     <button id="startBtn" onclick="startOver()" type="button" style="background-color: skyblue;margin-right: 10px; ">Start</button>
                 </div>
                 <button id="clearBtn" type="button" onclick="handleClear()">Clear</button>
             </div>
-            <div style="width:100%;display: flex; background-color:lightcoral; justify-content: center;">
-                <div id="phaserContainer" style="flex: 4;width: 70%;position: relative;z-index: 2000; border: #25AA31 solid 10px; border-bottom: #25AA31 solid 10px; color:black">
+            <div style="width:100%;display: flex; justify-content: center;">
+                <div id="phaserContainer" style="flex: 4;width: 70%;position: relative;z-index: 2000; color:black">
                     <div style="position: absolute; top: 0px; left: 50%;">
-                        <h3 style=" text-align: center;"id="curWord">guessWord</h3>
-                        <h4 style="text-align: center; color: black"id="timer">00:00</h4>
+                        <h3 style=" text-align: center;"id="curWord"></h3>
+                        <h4 style="text-align: center; color: black"id="timer"></h4>
                     </div>
-                    <div id="phaserCanvas" style="width:100%;margin-right: 10px;height:100%">
+                    <div class="cartoonist-canvas"id="phaserCanvas">
                         
                     </div>
                 </div>
-                <div id="playersList" style="flex:1; display: flex; flex-direction: column;justify-content: flex-start;height: 200px; background-color: lightblue;border: #FFD851 solid 5px">
-                    <!-- <div class="player" style="display:flex; height: 100px; background-color: black;">
-                        <div style="display: flex; flex-direction: column;justify-content: center; width:30%; background-color: #8BF1DF;">
-                            <img alt="avatar" src="./user-icon.png" style="object-fit:scale-down;max-width: 100%; max-height: 40px; margin:0px; padding:0px"/>
-                            <p style="word-wrap: break-word; text-align: center; margin:0px; padding:0px;">Hieu Dang</p>
-                        </div>
-                        <div style="flex: 1;display: flex; flex-direction: column; background-color: #25AA31;">
-                            <div id="playerGuess" style="flex: 1">
-                                Guess: ""
-                            </div>
-                            <div id="playerScore" style="flex:1">
-                                Score: 0
-                            </div>
-                        </div>
-                    </div> -->
-                    
+                <div id="playersList" class="cartoonist-players-list">
+                    <!-- populate html element-->
                 </div>
             </div>
-            <input id="guessInput" type="text">
-        </div>
-        
+        </div>   
     </div>
-    <div id="bottomInGame" style=" z-index: 2000; display:flex; flex-direction: row; position: absolute; bottom:0; right:0; margin-right: 10px; margin-bottom: 10px;">
+    <div id="bottomInGame" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 10px 10px;">
+        <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
         <div style=" background-color: #25AA31; padding-right:10px; padding-left: 10px; padding-top:2px; padding-bottom: 2px">
             <h4 id="roleText">You are not in a game</h4>
         </div>
-        <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
+       
     </div>
     <!-- <div id="gameOverContainer" style="border-style:solid; z-index: 2000;border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
         <h3>Game Over</h3>
@@ -155,25 +166,7 @@
             <h2>Results</h2>
             <h3 id="revealWord"></h3>
             <div id="playerResultsConainter" style="width: 100%; height: 100%; align-items: center;display:flex;flex-direction: column; justify-content: center;">
-                <!-- <div class="playerResults">
-                <div class="playerResult" >
-                    <div class="playerAvatar2" >
-                        <img class="playerImage" alt="avatar" src="./public/images/user-icon.png"/>
-                        <p class="playerName">Hieu Dang</p>
-                    </div>
-                    <div class="playerContext2">
-                        <div class="playerGuess" >
-                            Guess: ""
-                        </div>
-                        <div class="playerScore" >
-                            Score: 0
-                        </div>
-                    </div>
-                    <div class="playerTrend" id="trendIcon" >
-                        <img class="playerTrendImage" alt="trend-icon" src="./public/images/icons8-up-arrow-100.png" />
-                    </div>
-                </div>
-                </div> -->
+                <!-- populate html element-->
             </div>
           
             <div style="width:100%;display:flex; justify-content: space-evenly; margin: 10px">
@@ -192,44 +185,43 @@
         }
         });
         
-        document.getElementById("bottomInGame").style.visibility= "hidden";
-        document.getElementById("inGameContent").hidden = true;
+        document.getElementById("bottomInGame").style.display= "none";
+        document.getElementById("inGameContent").style.display = "none";
         //document.getElementById("gameOverContainer").style.visibility = "hidden";
         document.getElementById("myModal").style.display="none"
-        const parentCanvasContainer = document.getElementById("phaserCanvas")
-        console.log(parentCanvasContainer.clientWidth + " "+ parentCanvasContainer.clientHeight)
-        //document.getElementById("createGame").style.visibility= "hidden"
+        
+        //document.getElementById("createGame").style.display="none"
         const game = new Game({
             "id": "phaserCanvas",
-            "width": parentCanvasContainer.clientWidth,
-            "height":  parentCanvasContainer.clientHeight,
             "realmAppId": "draw-and-guess-sivns",
             "databaseName": "draw-game",
             "collectionName": "game",
         });
 
         function generateWords(){
-            const generalWords = words;
+            const generalWords = animals;
             const rand_index = Math.floor(Math.random() * generalWords.length)
             return generalWords[rand_index]
         }
         //await game.createOrJoin(document.getElementById("gameid").value, generateWords());
         const joinOrCreateGame = async () =>{
             await game.createOrJoin(document.getElementById("gameid").value,document.getElementById("playerName").value);
-            
+            document.getElementById("clouds").style.zIndex = "-1";
             document.getElementById("gameiddisplay").textContent = "Game ID: " + game.gameId
             document.getElementById("name").textContent = game.playerName;
-            document.getElementById("createGame").style.visibility= "hidden";
-            document.getElementById("bottomInGame").style.visibility= "visible";
-            document.getElementById("inGameContent").hidden =false;
+            document.getElementById("createGame").style.display= "none";
+            document.getElementById("waves-mounts").style.display= "none";
+            document.getElementById("bottomInGame").style.display= "flex";
+            document.getElementById("inGameContent").style.display ="block";
             if (game.authId == game.ownerId){
                 document.getElementById("text2").textContent = "You are the owner of this room"
                 document.getElementById("curWord").textContent = game.guessWord;
                 document.getElementById("roleText").textContent = "You are the Drawer";
-                document.getElementById("guessInput").style.visibility="hidden"
+                document.getElementById("guessInputContainer").style.display="none"
             } else {
-                document.getElementById("gameBtn").style.visibility="hidden"
-                document.getElementById("playAgainBtn").style.visibility="hidden"
+                // document.getElementById("gameBtn").disabled=true
+                // document.getElementById("playAgainBtn").disabled=true
+                document.getElementById("playAgainBtn").disabled=true
                 document.getElementById("text2").textContent = "You are not the owner of this room" 
                 document.getElementById("roleText").textContent = "You are the Guesser";
             }

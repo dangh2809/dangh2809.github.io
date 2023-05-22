@@ -7,7 +7,7 @@ class Game {
             // hieght: 700,
             // width: config.width,
             // height: config.height,
-            canvasStyle:"height: 100%; width:100%",
+            canvasStyle:"height: 100%; width:100%; border-radius: 10px",
             backgroundColor: 0xFFFFFF,
             // canvasStyle: "background-color: #ffff",
             // scale: {
@@ -122,16 +122,18 @@ class Game {
     }
     updateScene(){
         
-        // not allow participant to draw
-        if (this.authId != this.ownerId){
-            return
-        }
         // if time is out, then stop timer and show results
         if (this.timer.timeOut){
+            console.log("timeOut")
             this.displayPlayerResults(this.participants)
         } else {
             document.getElementById("myModal").style.display="none"
         }
+        // not allow participant to draw
+        if (this.authId != this.ownerId){
+            return
+        }
+        
         if (!this.input.activePointer.isDown && this.isDrawing){
             this.collection.updateOne(
                 {
@@ -393,6 +395,10 @@ class Game {
         }
         this.guessWord = newWord;
         this.guessCount++;
+        let newParticipants;
+        this.participants.map(participant=>{
+            newParticipants.push({...participant, guess: ""})
+        })
         await this.collection.updateOne(
             {
                 "_id": this.gameId,
@@ -400,7 +406,8 @@ class Game {
             },{
             "$set": {
                 "guessWord": this.guessWord,
-                "guessCount": this.guessCount
+                "guessCount": this.guessCount,
+                "participants": this.newParticipants
             }
         }).then(result => {console.log(result)}, error =>console.error(error))
        
@@ -421,10 +428,10 @@ class Game {
         document.getElementById("myModal").style.display="block"
         if(this.guessCount ==20 && this.timer.timeOut){
             document.getElementById("playAgainBtn").innerText="Play Again"
-            document.getElementById("nextBtn").style.visibility="hidden"
+            document.getElementById("nextBtn").style.display="none"
         } else {
             document.getElementById("playAgainBtn").innerText="Start Over"
-            document.getElementById("nextBtn").style.visibility="visible"
+            document.getElementById("nextBtn").style.display="block"
         }
         let revealWord = "";
           for (let i =0; i< this.guessWord.length; i++){
@@ -523,13 +530,14 @@ class Game {
             playerGuess.classList.add("playerGuess")
             const playerScore = document.createElement("div")
             playerScore.classList.add("playerScore")
-            console.log(participant.guess + " " +this.guessWord)
-            console.log(this)
+           
             // check if guess is correct
             if (participant.isDrawer && this.guessWord.length > 0){
                 playerGuess.innerHTML = "You are the drawer"
             } else if (participant.guess != this.guessWord){
-                playerGuess.innerHTML = "Guess: " + participant.guess;
+                document.getElementById("guessInput").disabled = false;
+                playerGuess.innerHTML = `guessed \"${participant.guess}\"`;
+                playerGuess.color = "#28DAD4"
                 playerScore.innerHTML = "Score: " + participant.score;
             } else if (participant.guess == this.guessWord && this.guessWord != "" && !participant.isDrawer){
                 console.log("correct")
@@ -541,7 +549,6 @@ class Game {
                 playerGuess.innerHTML =  "You are here"
             }else{
                 playerGuess.innerHTML =  participant.playerName +" joined game!";
-                document.getElementById("guessInput").disabled = false;
             }
             if (participant.guess != this.guessWord || this.guessWord == ""){
                 isAllCorrect = false

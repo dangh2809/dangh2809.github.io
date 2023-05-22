@@ -431,5 +431,24 @@ const words = [
 "Ông bà nội ngoại",
 ]
 const animals=[
-    
+    "Lion",
+"Elephant",
+"Tiger",
+"Giraffe",
+"Horse",
+"Dog",
+"Cat",
+"Bear",
+"Kangaroo",
+"Monkey",
+"Zebra",
+"Penguin",
+"Snake",
+"Dolphin",
+"Rabbit",
+"Gorilla",
+"Leopard",
+"Owl",
+"Cheetah",
+"Panda",
 ]
