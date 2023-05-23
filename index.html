@@ -78,20 +78,23 @@
             <div class="marginAlign"  style="z-index: 3000">
                 <h3  style="z-index: 3000"  id="text2"></h3>
                 <div  id="guessInputContainer" style="z-index: 3000;width: 100%; padding: 10px 10px;display:flex; justify-content: center; align-items: center;">
-                    <input id="guessInput" class="cartoonist-input" type="text"  placeholder="Enter your guess">
+                    <input id="guessInput" class="cartoonist-input" type="text"  placeholder="Enter your guess (then hit ENTER)">
                 </div>
                 <div style="z-index: 3000;display: flex; justify-content: space-between; margin-right: 30px">
                     <div>
                         <label>Difficulty:</label>
-                        <select id="difficulty" defaultValue="Hasdd" onchange="changeDifficulty()">
-                            <option value="Hasdd">Easy</option>
-                            <option value="asd">Medium</option>
-                            <option value="ad">Hard</option>
-                            <option value="d">Very Hard</option>
+                        <select id="difficulty" defaultValue="Easy" onchange="changeDifficulty()">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                            <option value="Very Hard">Very Hard</option>
+                            <option value="Vietnamese">Vietnamese</option>
+                            <option value="Animals">Animals</option>
                         </select>
                     </div>
                     <div id="gameBtn" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 0px 10px;">
                         <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
+                        <button id="skipBtn" onclick="nextRound()" type="button" style="background-color: skyblue; ">Skip</button>
                         <button id="startBtn" onclick="startOver()" type="button" style="background-color: #0195CF;margin-right: 10px; ">Start</button>
                     </div>
                 </div>
@@ -129,7 +132,7 @@
           
             <div style="width:100%;display:flex; justify-content: space-evenly; margin: 10px">
                 <button  id="playAgainBtn" onclick="startOver()" type="button" style="background-color: skyblue; ">Start Over</button>
-                <button id="nextBtn" onclick="handleSkip()" type="button" style="background-color: skyblue; ">Next</button>
+                <button id="nextBtn" onclick="nextRound()" type="button" style="background-color: skyblue; ">Next</button>
             </div>
         </div>
     </div>
@@ -158,11 +161,11 @@
         }
         });
         
-        // document.getElementById("inGameContent").style.display = "none";
+        document.getElementById("inGameContent").style.display = "none";
         document.getElementById("myModal").style.display="none"
-        document.getElementById("createGame").style.display="none"
-        document.getElementById("waves-mounts").style.display= "none";
-        document.getElementById("clouds").style.zIndex = "-1";
+        // document.getElementById("createGame").style.display="none"
+        // document.getElementById("waves-mounts").style.display= "none";
+        // document.getElementById("clouds").style.zIndex = "-1";
         const game = new Game({
             "id": "phaserCanvas",
             "realmAppId": "draw-and-guess-sivns",
@@ -219,9 +222,9 @@
         async function updatePlayerGuess(guess){
             await game.updatePlayerGuess(guess);
         }
-        async function handleSkip(){
+        async function nextRound(){
             let newWord = generateWords();
-            await game.skipWord(newWord);
+            await game.nextRound(newWord);
         }
         
     </script>

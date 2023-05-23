@@ -495,7 +495,7 @@ class Game {
             }else{
                 playerGuess.innerHTML =  participant.playerName +" joined game!";
             }
-            if (!participant.isDrawer && this.compareTwoWords(this.guessWord, participant.guess)|| this.guessWord == "" ){
+            if (!participant.isDrawer && !this.compareTwoWords(this.guessWord, participant.guess)|| this.guessWord == ""){
                 isAllCorrect = false
             }
             playerName.innerHTML = participant.playerName;
@@ -522,6 +522,15 @@ class Game {
             if (participant.userId != this.authId){
                 newParticipants.push(participant)
             } else if (this.compareTwoWords(guess, this.guessWord)) {
+                let revealWord = "";
+                for (let i =0; i< this.guessWord.length; i++){
+                    if ( this.guessWord[i] === " "){
+                        revealWord += "\xa0 \xa0"
+                        continue;
+                    } 
+                        revealWord += `${this.guessWord[i]} `
+                }
+                document.getElementById("curWord").textContent = revealWord;
                 newParticipants.push({...participant, guess: guess, score: participant.score+1})
             } else {
                 newParticipants.push({...participant, guess: guess})
@@ -537,8 +546,8 @@ class Game {
         ).then(result => {console.log(result)}, error =>console.error(error))
     }
     compareTwoWords(word1, word2){
-        var normalizedStr1 = str1.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, "");
-        var normalizedStr2 = str2.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, ""); 
+        var normalizedStr1 = word1.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, "");
+        var normalizedStr2 = word2.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, ""); 
         return normalizedStr1 === normalizedStr2;
     }
 }
