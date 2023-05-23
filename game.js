@@ -53,7 +53,7 @@ class Game {
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
-        this.timer = new Timer(0,20)
+        this.timer = new Timer(1,30)
         this.displayPlayers(this.participants, this.timer)
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
