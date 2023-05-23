@@ -283,9 +283,48 @@ button:disabled{
   
   /* Pseudo-element for Heart Symbol */
   .cartoonist-heart::before {
-    content: "HieuDang\2764ThuPhuong"; /* Heart symbol */
+    content: "\2764"; /* Heart symbol */
+  }
+  /* Styling the select element */
+select {
+    appearance: none;
+    background-color: #B0F2EF;
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: "ComicSan";
+    font-size: 16px;
+    color: #000;
+    cursor: pointer;
+    width: 200px;
   }
   
+  /* Styling the dropdown arrow */
+  select::after {
+    content: '\25BE';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #000;
+    pointer-events: none;
+  }
+  
+  /* Styling the dropdown options */
+  select option {
+    background-color: #B0F2EF;
+    color: #000;
+    font-family: "ComicSan";
+    font-size: 16px;
+  }
+  
+  /* Styling the dropdown when opened */
+  select:focus {
+    outline: none;
+    border-color: #00f;
+    box-shadow: 0 0 4px rgba(0, 0, 255, 0.5);
+  }
   /* Rest of your CSS code */
 
 
