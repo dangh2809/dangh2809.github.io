@@ -33,6 +33,7 @@ class Game {
         this.displayPlayers = data.displayPlayers
         this.setGuessWord = data.setGuessWord
         this.displayPlayerResults = data.displayPlayerResults
+        this.compareTwoWords = data.compareTwoWords
     }
     async createScene(){
         // add graphic and draw the existing strokes
@@ -199,6 +200,7 @@ class Game {
                     "guessCount": result.guessCount,
                     "playerName": this.playerName,
                     "guessWord": result.guessWord,
+                    "compareTwoWords": (word1, word2) => this.compareTwoWords(word1, word2),
                     "setParticipants": (newParticipants)=>{this.participants = newParticipants},
                     "displayPlayers": (participants, timer)=>{this.displayPlayers(participants, timer)},
                     "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
@@ -263,6 +265,7 @@ class Game {
                 "guessWord": "",
                 "playerName": this.playerName,
                 "participants":this.participants,
+                "compareTwoWords": (word1, word2) => this.compareTwoWords(word1, word2),
                 "setParticipants": (newParticipants)=>{this.participants = newParticipants},
                 "displayPlayers": (participants, timer)=>{this.displayPlayers(participants, timer)},
                 "setGuessWord": (guessWord)=>{this.guessWord = guessWord},
@@ -346,7 +349,7 @@ class Game {
         }).then(result => {console.log(result)}, error =>console.error(error))
 
     }
-    async skipWord(newWord){
+    async nextRound(newWord){
         if (this.authId != this.ownerId){
             return
         }
@@ -426,7 +429,7 @@ class Game {
             playerGuess.classList.add("playerGuess")
             const playerScore = document.createElement("div");
             playerScore.classList.add("playerScore")
-            if (this.guessWord == participant.guess){
+            if (this.compareTwoWords(this.guessWord, participant.guess)){
                 playerGuess.innerHTML = participant.playerName + " guessed correctly!"
                 playerGuess.style.color = "green"
             } else if (participant.isDrawer) {
@@ -455,6 +458,7 @@ class Game {
         console.log(this)
         const playerListContainer = document.getElementById("playersList")
         participants.sort((a,b)=>a.score - b.score)
+        document.getElementById("guessInput").value = ""
         participants.map((participant)=>{
             const playerContainer = document.createElement("div")
             playerContainer.classList.add("player")
@@ -471,16 +475,16 @@ class Game {
             playerGuess.classList.add("playerGuess")
             const playerScore = document.createElement("div")
             playerScore.classList.add("playerScore")
-           
+            
             // check if guess is correct
             if (participant.isDrawer && this.guessWord.length > 0){
                 playerGuess.innerHTML = "You are the drawer"
-            } else if (participant.guess != this.guessWord){
+            } else if (!this.compareTwoWords(this.guessWord, participant.guess)){
                 document.getElementById("guessInput").disabled = false;
                 playerGuess.innerHTML = `guessed \"${participant.guess}\"`;
                 playerGuess.color = "#28DAD4"
                 playerScore.innerHTML = "Score: " + participant.score;
-            } else if (participant.guess == this.guessWord && this.guessWord != "" && !participant.isDrawer){
+            } else if (this.compareTwoWords(this.guessWord, participant.guess) && this.guessWord != "" && !participant.isDrawer){
                 console.log("correct")
                 playerGuess.innerHTML = participant.playerName + " guessed correctly!"
                 document.getElementById("guessInput").disabled = true;
@@ -491,7 +495,7 @@ class Game {
             }else{
                 playerGuess.innerHTML =  participant.playerName +" joined game!";
             }
-            if (!participant.isDrawer && participant.guess != this.guessWord || this.guessWord == "" ){
+            if (!participant.isDrawer && this.compareTwoWords(this.guessWord, participant.guess)|| this.guessWord == "" ){
                 isAllCorrect = false
             }
             playerName.innerHTML = participant.playerName;
@@ -503,13 +507,13 @@ class Game {
             playerContainer.appendChild(playerContext)
             playerListContainer.appendChild(playerContainer)
 
-            if (isAllCorrect && this.guessWord != ""){
-                timer.stop(this.guessWord)
-                console.log("all correct")
-            } else {
-                console.log("not all correct")
-            }
         })
+        if (isAllCorrect && this.guessWord != ""){
+            timer.stop(this.guessWord)
+            console.log("all correct")
+        } else {
+            console.log("not all correct")
+        }
     }
 
     async updatePlayerGuess(guess){
@@ -517,7 +521,7 @@ class Game {
         this.participants.map(participant=>{
             if (participant.userId != this.authId){
                 newParticipants.push(participant)
-            } else if (guess == this.guessWord) {
+            } else if (this.compareTwoWords(guess, this.guessWord)) {
                 newParticipants.push({...participant, guess: guess, score: participant.score+1})
             } else {
                 newParticipants.push({...participant, guess: guess})
@@ -532,5 +536,9 @@ class Game {
             }
         ).then(result => {console.log(result)}, error =>console.error(error))
     }
-
+    compareTwoWords(word1, word2){
+        var normalizedStr1 = str1.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, "");
+        var normalizedStr2 = str2.normalize("NFD").toLowerCase().replace(/[\u0300-\u036f]/g, ""); 
+        return normalizedStr1 === normalizedStr2;
+    }
 }

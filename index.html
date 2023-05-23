@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comic+Sans+MS">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.51.0/dist/phaser-arcade-physics.min.js"></script>
     <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.6.0/stitch.js"></script>
+    <script src="https://cdn.rawgit.com/nquinlan/better-random-numbers-for-javascript-mirror/master/support/js/Mash.js"></script>
+    <script src="https://cdn.rawgit.com/nquinlan/better-random-numbers-for-javascript-mirror/master/support/js/Alea.js"></script>
     <script src="game.js"></script>
     <script src="data.js"></script>
     <script src="timer.js"></script>
@@ -78,8 +80,16 @@
                 <div  id="guessInputContainer" style="z-index: 3000;width: 100%; padding: 10px 10px;display:flex; justify-content: center; align-items: center;">
                     <input id="guessInput" class="cartoonist-input" type="text"  placeholder="Enter your guess">
                 </div>
-                <div style="z-index: 3000;display: flex; justify-content: flex-end; margin-right: 30px">
-                    
+                <div style="z-index: 3000;display: flex; justify-content: space-between; margin-right: 30px">
+                    <div>
+                        <label>Difficulty:</label>
+                        <select id="difficulty" defaultValue="Hasdd" onchange="changeDifficulty()">
+                            <option value="Hasdd">Easy</option>
+                            <option value="asd">Medium</option>
+                            <option value="ad">Hard</option>
+                            <option value="d">Very Hard</option>
+                        </select>
+                    </div>
                     <div id="gameBtn" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 0px 10px;">
                         <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
                         <button id="startBtn" onclick="startOver()" type="button" style="background-color: #0195CF;margin-right: 10px; ">Start</button>
@@ -126,7 +136,8 @@
     <script>
         const container = document.querySelector('.cartoonist-hearts-container');
         const numHearts = 80; // Number of hearts to generate
-
+        var random = Alea();
+        var generalWords = words["Easy"]
         for (let i = 0; i < numHearts; i++) {
             
             const heart = document.createElement('span');
@@ -147,19 +158,24 @@
         }
         });
         
-        document.getElementById("inGameContent").style.display = "none";
+        // document.getElementById("inGameContent").style.display = "none";
         document.getElementById("myModal").style.display="none"
-        
+        document.getElementById("createGame").style.display="none"
+        document.getElementById("waves-mounts").style.display= "none";
+        document.getElementById("clouds").style.zIndex = "-1";
         const game = new Game({
             "id": "phaserCanvas",
             "realmAppId": "draw-and-guess-sivns",
             "databaseName": "draw-game",
             "collectionName": "game",
         });
-
+        
+        function changeDifficulty(){
+            const selectedValue = document.getElementById("difficulty").value;
+            generalWords = words[selectedValue]
+        }
         function generateWords(){
-            const generalWords = words;
-            const rand_index = Math.floor(Math.random() * generalWords.length)
+            const rand_index = Math.floor(random() * generalWords.length)
             return generalWords[rand_index]
         }
 
