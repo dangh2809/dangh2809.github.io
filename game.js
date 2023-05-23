@@ -3,18 +3,8 @@ class Game {
         this.phaserConfig={
             type: Phaser.AUTO,
             parent: config.id,
-            // width: 1080,
-            // hieght: 700,
-            // width: config.width,
-            // height: config.height,
             canvasStyle:"height: 100%; width:100%; border-radius: 10px; max-height: 600px",
             backgroundColor: 0xFFFFFF,
-            // canvasStyle: "background-color: #ffff",
-            // scale: {
-            //     mode: Phaser.Scale.FIT,
-            //     parent: config.id,
-            //     // autoCenter: Phaser.Scale.CENTER_BOTH,
-            // },
             scene: {
                 key:"default",
                 init: this.initScene,
@@ -45,21 +35,25 @@ class Game {
         this.displayPlayerResults = data.displayPlayerResults
     }
     async createScene(){
+        // add graphic and draw the existing strokes
         this.graphics = this.add.graphics();
-        this.graphics.lineStyle(4, 0x0025aa31)
-        console.log(this)
+        this.graphics.lineStyle(4, 0x0025aa31);
         this.strokes.forEach(stroke=>{
             this.path = new Phaser.Curves.Path();
             this.path.fromJSON(stroke);
             this.path.draw(this.graphics)
         })
+
+        // initialize a timer to be used
         this.timer = new Timer(1,30)
+        //display list of players
         this.displayPlayers(this.participants, this.timer)
+
+        // watch database changes
         const stream = await this.collection.watch({
             "fullDocument._id": this.gameId
         })
         stream.onNext(event=>{
-            console.log(this)
             console.log(event)
             let participants = event.fullDocument.participants;
             this.setParticipants(participants)
@@ -80,11 +74,9 @@ class Game {
                     changeStreamPath.fromJSON(updatedFields[updatedField][0])
                     changeStreamPath.draw(this.graphics)
                     continue;
-                // } else if (updatedField =="score") {
-                //     // document.getElementById("score").textContent = "Correct: " + updatedFields[updatedField] +"/20";
-                //     continue;
                 } else if (updatedField =="guessWord"){
                     if (this.authId != this.ownerId){
+                        // hid the word for guesser
                         let hiddenWord="";
                         for (let i =0; i< updatedFields[updatedField].length; i++){
                             if ( updatedFields[updatedField][i] === " "){
@@ -93,24 +85,18 @@ class Game {
                             } 
                             hiddenWord += "_ "
                         }
-
                         document.getElementById("curWord").textContent = hiddenWord
-                        console.log("timeout")
+    
                     }else {
                         document.getElementById("curWord").textContent = updatedFields[updatedField]
                     }
+
+                    // start the timer
                     this.timer.start(updatedFields[updatedField], this.authId != this.ownerId);
                     continue;
                 }
                 else if (updatedField =="guessCount"){
-                    // if (updatedFields[updatedField] >= 20){
-                    //     document.getElementById("gameOverContainer").style.visibility = "visible";
-                    // } else {
-                    //     document.getElementById("gameOverContainer").style.visibility = "hidden";
-                    // }
-                    document.getElementById("remainGuess").textContent = `You have ${20-updatedFields[updatedField]} guesses left`;
-                    continue
-                } else if (updatedField =="participants"){
+                    document.getElementById("remainGuess").textContent = `Round: ${updatedFields[updatedField]}/20`;
                     continue
                 } else if (updatedField.includes("strokes.")){
                     let changeStreamPath = new Phaser.Curves.Path();
@@ -120,11 +106,10 @@ class Game {
                 
             }
         })
-        console.log(this)
     }
     updateScene(){
         
-        // if time is out, then stop timer and show results
+        // if time is out or players are all correct then stop timer and show results
         if (this.guessWord != "" && this.timer.timeOut){
             console.log("timeOut")
             this.displayPlayerResults(this.participants, this.timer)
@@ -202,7 +187,6 @@ class Game {
                 this.guessCount = result.guessCount
                 this.strokes = result.stroke;
                 this.playerName = playerName;
-                // document.getElementById("score").textContent = "Correct: " + result.score +"/20";
                 document.getElementById("remainGuess").textContent = `Round: ${this.guessCount}/20`;
                 this.participants.push(newParticipant)
                 await this.game.scene.start("default", {
@@ -269,7 +253,6 @@ class Game {
             this.guessCount =0;
             this.playerName = playerName
             this.strokes = [];
-            console.log(this)
             await this.game.scene.start("default", {
                 "gameId": id,
                 "collection": this.collection,
@@ -363,24 +346,6 @@ class Game {
         }).then(result => {console.log(result)}, error =>console.error(error))
 
     }
-    // async addScore(newWord){
-    //     console.log(this)
-    //     if (this.authId != this.ownerId){
-    //         return
-    //     }
-    //     console.log(this)
-    //     await this.collection.updateOne(
-    //         {
-    //             "_id": this.gameId,
-    //             "owner_id": this.authId
-    //         },{
-    //         "$set": {
-    //             "score": this.score 
-    //         }
-    //     }).then(result => {console.log(result)}, error =>console.error(error))
-    //     await this.skipWord(newWord)
-
-    // }
     async skipWord(newWord){
         if (this.authId != this.ownerId){
             return
@@ -461,11 +426,6 @@ class Game {
             playerGuess.classList.add("playerGuess")
             const playerScore = document.createElement("div");
             playerScore.classList.add("playerScore")
-            // const playerTrend = document.createElement("div");
-            // playerTrend.classList.add("playerTrend")
-            // const playerTrendImage = document.createElement("img");
-            // playerTrendImage.classList.add("playerTrendImage")
-
             if (this.guessWord == participant.guess){
                 playerGuess.innerHTML = participant.playerName + " guessed correctly!"
                 playerGuess.style.color = "green"
@@ -488,24 +448,7 @@ class Game {
             playerResults.appendChild(playerResult)
             resultContainer.appendChild(playerResults)
         })
-        // <!-- <div class="playerResults">
-        //     <div class="playerResult" >
-        //         <div class="playerAvatar2" >
-        //             <img class="playerImage" alt="avatar" src="./public/images/user-icon.png"/>
-        //             <p class="playerName">Hieu Dang</p>
-        //         </div>
-        //         <div class="playerContext2">
-        //             <div class="playerGuess" >
-        //                 Guess: ""
-        //             </div>
-        //             <div class="playerScore" >
-        //                 Score: 0
-        //             </div>
-        //         </div>
-        //         <div class="playerTrend" id="trendIcon" >
-        //             <img class="playerTrendImage" alt="trend-icon" src="./public/images/icons8-up-arrow-100.png" />
-        //         </div>
-        //     </div> -->
+
     }
     displayPlayers(participants, timer){
         let isAllCorrect = true

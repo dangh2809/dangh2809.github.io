@@ -12,59 +12,7 @@
     <script src="data.js"></script>
     <script src="timer.js"></script>
     <title>Drawing game</title>
-    <style>
-        body{
-            font-family: 'ComicSan';
-        }
-        button{
-            font-family: 'ComicSan';
-        }
-        input{
-            font-family: 'ComicSan';
-        }
-        button 
-        {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 10px;
-            background-color: #ebdc3b;
-            border: none;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        button span {
-        position: relative;
-        z-index: 1;
-        }
-        button:hover {
-            transform: scale(1.05);
-        }
-        button:disabled{
-            background-color: grey;
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .marginAlign{
-            margin: 10px
-        }
-        .cartoonist-div2 
-        {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 10px;
-            background-color: #25AA31;
-            border: none;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-        }
-    </style>
+
 </head>
 <body>
     <div>
@@ -151,7 +99,7 @@
                         <h4 style="text-align: center; color: black"id="timer"></h4>
                     </div>
                     <div class="cartoonist-canvas"id="phaserCanvas">
-                        
+                        <!-- populate canvas -->
                     </div>
                 </div>
                 <div id="playersList" class="cartoonist-players-list">
@@ -160,17 +108,7 @@
             </div>
         </div>   
     </div>
-    <!-- <div id="bottomInGame" style=" z-index: 2000; display:flex; flex-direction: row-reverse;  margin: 10px 10px;">
-        <button id="leaveGameBtn" style="margin-left: 10px; background-color: lightcoral " type="button" onclick="leaveGame()">leave</button>
-        <div style=" background-color: #25AA31; padding-right:10px; padding-left: 10px; padding-top:2px; padding-bottom: 2px">
-            <h4 id="roleText">You are not in a game</h4>
-        </div>
-       
-    </div> -->
-    <!-- <div id="gameOverContainer" style="border-style:solid; z-index: 2000;border-width: 2px; border-color:black;position:fixed;top:50%; left: 50%; transform: translate(-50%, -50%); background-color: hotpink; padding: 10px; top: 50;display:flex; flex-direction: column;">
-        <h3>Game Over</h3>
-        <button  id="playAgain" onclick="startOver()" type="button" style="background-color: skyblue; align-self: center;">Play again</button>
-    </div> -->
+  
     <div id="myModal" class="modal">
         <div id="modal-content" class="modal-content">
             <h2>Results</h2>
@@ -190,8 +128,9 @@
         const numHearts = 80; // Number of hearts to generate
 
         for (let i = 0; i < numHearts; i++) {
+            
             const heart = document.createElement('span');
-            heart.innerHTML="Rosie"
+            // heart.innerHTML="Rosie"
             heart.classList.add('cartoonist-heart');
             const randomX = Math.floor(Math.random() * 100); // Generate random value between 0-100
             heart.style.setProperty('--random-x', `${randomX}`);
@@ -209,10 +148,8 @@
         });
         
         document.getElementById("inGameContent").style.display = "none";
-        //document.getElementById("gameOverContainer").style.visibility = "hidden";
         document.getElementById("myModal").style.display="none"
         
-        //document.getElementById("createGame").style.display="none"
         const game = new Game({
             "id": "phaserCanvas",
             "realmAppId": "draw-and-guess-sivns",
@@ -225,7 +162,7 @@
             const rand_index = Math.floor(Math.random() * generalWords.length)
             return generalWords[rand_index]
         }
-        //await game.createOrJoin(document.getElementById("gameid").value, generateWords());
+
         const joinOrCreateGame = async () =>{
             await game.createOrJoin(document.getElementById("gameid").value,document.getElementById("playerName").value);
             document.getElementById("clouds").style.zIndex = "-1";
@@ -240,8 +177,6 @@
                 document.getElementById("roleText").textContent = "You are the Drawer";
                 document.getElementById("guessInputContainer").style.display="none"
             } else {
-                // document.getElementById("gameBtn").disabled=true
-                // document.getElementById("playAgainBtn").disabled=true
                 document.getElementById("playAgainBtn").disabled=true
                 document.getElementById("nextBtn").disabled=true
                 document.getElementById("text2").textContent = "You are not the owner of this room" 

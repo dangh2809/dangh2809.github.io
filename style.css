@@ -25,6 +25,59 @@
     font-weight: bold;
     font-style: italic;
   }
+  body{
+    font-family: 'ComicSan';
+    background-color: #28DAD4;
+ 
+}
+button{
+    font-family: 'ComicSan';
+}
+input{
+    font-family: 'ComicSan';
+}
+button 
+{
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #ebdc3b;
+    border: none;
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+button span {
+position: relative;
+z-index: 1;
+}
+button:hover {
+    transform: scale(1.05);
+}
+button:disabled{
+    background-color: grey;
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.marginAlign{
+    margin: 10px
+}
+.cartoonist-div2 
+{
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #25AA31;
+    border: none;
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+}
 .player {
     display:flex; 
     height: 100px;
@@ -115,46 +168,12 @@
   .playerTrendImage{
     object-fit:scale-down;max-width: 100%; max-height: 100%; margin:0px; padding:0px
   }
-  /* .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  } */
-  
-  /* @keyframes modal-slide {
-    from {
-      transform: translateX(-50%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes modal-pop {
-    from {
-      transform: scale(0);
-    }
-    to {
-      transform: scale(1);
-    }
-  } */
 /* Text Input Styles */
 .cartoonist-input {
     border: 2px solid #000;
     border-radius: 10px;
     padding: 10px;
-    font-family: 'Comic Sans MS', cursive;
+    font-family: 'ComicSan';
     font-size: 16px;
     background-color: #fff;
     color: #000;
@@ -264,37 +283,10 @@
   
   /* Pseudo-element for Heart Symbol */
   .cartoonist-heart::before {
-    content: "\2764"; /* Heart symbol */
-  }
-  
-  /* Adjust Heart Style */
-  .cartoonist-heart {
-    /* Add additional styling for the heart element, like font family, shadow, etc. */
+    content: "HieuDang\2764ThuPhuong"; /* Heart symbol */
   }
   
   /* Rest of your CSS code */
-  
-
-
-body {
-    background-color: #28DAD4;
-    /* margin: 0;
-    padding: 0; */
-    /* overflow: hidden; */
-}
-a {
-    cursor: url(https://greghub.github.io/coloron/public/svg/cursor.svg), pointer;
-    &:focus, &:active {
-    cursor: url(https://greghub.github.io/coloron/public/svg/cursor-tap.svg), pointer;
-    }
-}
-/* .container {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 100%;
-} */
 
 
 .waves, .mounts {
